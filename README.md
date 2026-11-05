@@ -1,6 +1,8 @@
 # Zeebaran
 
-Original Zeebaran website built from scratch in Next.js App Router, TypeScript, React, Tailwind CSS, Framer Motion, Lucide and Zod. Local implementation only: no deployment, remote push or domain change has been performed.
+Original Zeebaran website built from scratch in Next.js App Router, TypeScript, React, Tailwind CSS, Framer Motion, Lucide and Zod.
+
+> **Branch:** `ui/zeebaran_v1` — active development branch.
 
 ## Run locally
 
