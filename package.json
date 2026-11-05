@@ -1,0 +1,44 @@
+{
+  "name": "zeebaran",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test tests/*.test.ts",
+    "check": "npm run lint && npm run typecheck && npm test",
+    "check:production": "tsx scripts/check-production.ts",
+    "format": "prettier --write src tests scripts docs *.md *.json *.mjs *.ts",
+    "test:smoke": "tsx scripts/smoke.ts"
+  },
+  "dependencies": {
+    "framer-motion": "14.9.1",
+    "lucide-react": "^0.577.0",
+    "next": "16.4.5",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "tailwindcss": "4.3.4",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@next/env": "^16.4.5",
+    "@tailwindcss/postcss": "4.3.4",
+    "@types/node": "^20.19.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "eslint": "^9.0.0",
+    "eslint-config-next": "16.4.5",
+    "lighthouse": "^13.0.0",
+    "prettier": "^3.9.10",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.0"
+  },
+  "overrides": {
+    "@typescript-eslint/typescript-estree": {
+      "minimatch": "11.0.1"
+    }
+  }
+}
