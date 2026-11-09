@@ -3,7 +3,8 @@ import { applicationDefault, cert, getApps, initializeApp } from "firebase-admin
 import { FieldValue, getFirestore, Timestamp } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
 import { EnquiryError } from "./errors";
-import { hasPdfHeader, type Submission } from "../schema";
+import { validatePdf, scanCloudPdf, scannerUrl } from "./pdf";
+import { type Submission } from "../schema";
 function firebase() {
   const projectId = process.env.FIREBASE_PROJECT_ID;
   const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
@@ -43,6 +44,7 @@ function bucket() {
 }
 export async function issueCloud(ticket: string, id: string, size: number) {
   const file = bucket().file("pending/" + id + "/" + ticket + ".pdf");
+  scannerUrl();
   const [policy] = await file.generateSignedPostPolicyV4({
     expires: Date.now() + 600000,
     fields: { "Content-Type": "application/pdf" },
@@ -57,7 +59,11 @@ function compareFingerprint(existing: string, fingerprint: string) {
   if (existing !== fingerprint)
     throw new EnquiryError(409, "This enquiry was already submitted with different details.");
 }
-async function acceptAttachment(id: string, attachment: NonNullable<Submission["attachment"]>) {
+async function acceptAttachment(
+  id: string,
+  attachment: NonNullable<Submission["attachment"]>,
+  reserve: () => Promise<void>,
+) {
   const storage = bucket();
   const pending = storage.file("pending/" + id + "/" + attachment.ticket + ".pdf");
   const destination = storage.file("received/" + id + "/" + attachment.ticket + ".pdf");
@@ -70,13 +76,26 @@ async function acceptAttachment(id: string, attachment: NonNullable<Submission["
     if (Number(meta.size) !== attachment.size || meta.contentType !== "application/pdf")
       throw new EnquiryError(422, "The uploaded file does not match the attachment.");
     const snapshot = storage.file(pending.name, { generation: meta.generation });
-    const [header] = await snapshot.download({ start: 0, end: 4, validation: false });
-    if (!hasPdfHeader(header)) throw new EnquiryError(422, "The attachment must contain a PDF.");
+    const [bytes] = await snapshot.download();
+    await validatePdf(bytes);
+    await scanCloudPdf(bytes);
+    await reserve();
     try {
       await snapshot.copy(destination, { preconditionOpts: { ifGenerationMatch: 0 } });
     } catch (error) {
       if ((error as { code?: number }).code !== 412) throw error;
     }
+  }
+  if (alreadyCopied) {
+    const [meta] = await destination.getMetadata();
+    if (Number(meta.size) !== attachment.size)
+      throw new EnquiryError(422, "The stored attachment size does not match.");
+    const [bytes] = await storage
+      .file(destination.name, { generation: meta.generation })
+      .download();
+    await validatePdf(bytes);
+    await scanCloudPdf(bytes);
+    await reserve();
   }
   const [accepted] = await destination.getMetadata();
   if (Number(accepted.size) !== attachment.size || accepted.contentType !== "application/pdf") {
@@ -90,15 +109,39 @@ export async function saveCloud(data: Submission, fingerprint: string) {
   const prior = await doc.get();
   if (prior.exists) {
     compareFingerprint(prior.get("fingerprint"), fingerprint);
-    return;
+    if (prior.get("status") !== "receiving") return;
   }
-  const object = data.attachment ? await acceptAttachment(data.requestId, data.attachment) : null;
+  const reserve = () =>
+    database.runTransaction(async (tx) => {
+      const previous = await tx.get(doc);
+      if (previous.exists) {
+        compareFingerprint(previous.get("fingerprint"), fingerprint);
+        return;
+      }
+      tx.create(doc, {
+        ...data,
+        fingerprint,
+        status: "receiving",
+        createdAt: FieldValue.serverTimestamp(),
+      });
+    });
+  const object = data.attachment
+    ? await acceptAttachment(data.requestId, data.attachment, reserve)
+    : null;
   await database.runTransaction(async (tx) => {
     const previous = await tx.get(doc);
     if (previous.exists) {
       compareFingerprint(previous.get("fingerprint"), fingerprint);
+      if (previous.get("status") === "receiving")
+        tx.update(doc, { object, status: "received", receivedAt: FieldValue.serverTimestamp() });
       return;
     }
-    tx.create(doc, { ...data, object, fingerprint, createdAt: FieldValue.serverTimestamp() });
+    tx.create(doc, {
+      ...data,
+      object,
+      fingerprint,
+      status: "received",
+      createdAt: FieldValue.serverTimestamp(),
+    });
   });
 }

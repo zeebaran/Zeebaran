@@ -1,5 +1,5 @@
 "use client";
-import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useSearchParams } from "next/navigation";
 import { useForm, useWatch, type FieldErrors, type Resolver } from "react-hook-form";
 import { ArrowRight, Check, FilePlus2, LoaderCircle, X } from "lucide-react";
@@ -16,6 +16,9 @@ import {
 } from "./schema";
 import { SITE } from "@/lib/site";
 
+const subscribe = () => () => {};
+const clientReady = () => true;
+const serverReady = () => false;
 const defaults: FormFields = {
   name: "",
   organisation: "",
@@ -51,6 +54,15 @@ function RouteReason({
   }, [search, select, prefill]);
   return null;
 }
+async function request(url: string, init: RequestInit, timeout = 30000) {
+  try {
+    return await fetch(url, { ...init, signal: AbortSignal.timeout(timeout) });
+  } catch (err) {
+    if (err instanceof DOMException && ["AbortError", "TimeoutError"].includes(err.name))
+      throw new Error("The connection timed out. Your message is still here. Please retry.");
+    throw err;
+  }
+}
 class DeliveryError extends Error {
   constructor(
     public readonly status: number,
@@ -60,7 +72,7 @@ class DeliveryError extends Error {
   }
 }
 async function postJson<T>(path: string, data: unknown): Promise<T> {
-  const response = await fetch(path, {
+  const response = await request(path, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -81,16 +93,22 @@ async function upload(file: File, id: string) {
     const body = new FormData();
     Object.entries(fields).forEach(([key, value]) => body.append(key, value));
     body.append("file", file);
-    response = await fetch(url, { method: "POST", body });
+    response = await request(url, { method: "POST", body }, 120000);
   } else {
-    response = await fetch(url, {
-      method: "PUT",
-      body: file,
-      headers: { "Content-Type": "application/pdf" },
-    });
+    response = await request(
+      url,
+      {
+        method: "PUT",
+        body: file,
+        headers: { "Content-Type": "application/pdf" },
+      },
+      120000,
+    );
   }
-  if (!response.ok)
-    throw new Error("The PDF upload failed. Please retry or remove the attachment.");
+  if (!response.ok) {
+    const detail = await response.json().catch(() => null);
+    throw new Error(detail?.error || "The PDF upload failed. Retry, replace or remove the file.");
+  }
   return { name: file.name, size: file.size, ticket };
 }
 export function ContactForm({ simple = false }: { simple?: boolean }) {
@@ -103,6 +121,8 @@ export function ContactForm({ simple = false }: { simple?: boolean }) {
     reset,
     getValues,
   } = useForm<FormFields>({ defaultValues: defaults, resolver: validate });
+  const hydrated = useSyncExternalStore(subscribe, clientReady, serverReady);
+  const routedReason = useRef<FormFields["reason"]>("general");
   const topic = useWatch({ control, name: "topic" });
   const [file, setFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState("");
@@ -117,7 +137,10 @@ export function ContactForm({ simple = false }: { simple?: boolean }) {
   const fileInput = useRef<HTMLInputElement>(null);
   const successHeading = useRef<HTMLHeadingElement>(null);
   const selectReason = useCallback(
-    (reason: FormFields["reason"]) => setValue("reason", reason),
+    (reason: FormFields["reason"]) => {
+      routedReason.current = reason;
+      setValue("reason", reason);
+    },
     [setValue],
   );
   const prefill = useCallback(
@@ -173,7 +196,7 @@ export function ContactForm({ simple = false }: { simple?: boolean }) {
     } catch (reason) {
       const message =
         reason instanceof Error ? reason.message : "Delivery failed. Please try again.";
-      if (reason instanceof DeliveryError && reason.status === 422) current.attachment = null;
+      if (reason instanceof DeliveryError && reason.status === 422) attempt.current = null;
       setError(message);
     }
   }
@@ -223,7 +246,10 @@ export function ContactForm({ simple = false }: { simple?: boolean }) {
               setError("");
               setFile(null);
               attempt.current = null;
-              reset(defaults);
+              setFileError("");
+              setWorkingFile(false);
+              selection.current++;
+              reset({ ...defaults, reason: routedReason.current });
             }}
           >
             Write another enquiry
@@ -231,14 +257,24 @@ export function ContactForm({ simple = false }: { simple?: boolean }) {
         </div>
       ) : (
         <form
+          method="post"
+          action="/api/enquiries"
           onSubmit={(event) => {
+            if (!hydrated || fileError || workingFile) {
+              event.preventDefault();
+              return;
+            }
             const website = String(new FormData(event.currentTarget).get("website") || "");
             void handleSubmit((values) => send(values, website))(event);
           }}
           noValidate
           aria-label="Zeebaran enquiry"
         >
-          <fieldset disabled={isSubmitting} className="form-fields">
+          <noscript>
+            To send an enquiry without JavaScript,{" "}
+            <a href={"mailto:" + SITE.email}>email the Zeebaran team</a>.
+          </noscript>
+          <fieldset disabled={!hydrated || isSubmitting} className="form-fields">
             {!simple && (
               <>
                 <div className="desk-heading">
@@ -369,7 +405,7 @@ export function ContactForm({ simple = false }: { simple?: boolean }) {
                     </small>
                   </span>
                 </label>
-                {file && (
+                {(file || fileError) && (
                   <button
                     type="button"
                     className="remove-file"
@@ -394,7 +430,7 @@ export function ContactForm({ simple = false }: { simple?: boolean }) {
             <button
               className="action primary send-enquiry"
               type="submit"
-              disabled={isSubmitting || workingFile}
+              disabled={!hydrated || isSubmitting || workingFile || !!fileError}
             >
               {isSubmitting ? "Sending…" : "Send message"}{" "}
               {isSubmitting ? (

@@ -1,6 +1,16 @@
 import type { NextConfig } from "next";
 const dev = process.env.NODE_ENV !== "production";
 const config: NextConfig = {
+  serverExternalPackages: ["pdf-lib"],
+  outputFileTracingIncludes: {
+    "/api/enquiries*": [
+      "./scripts/validate-pdf.mjs",
+      "./node_modules/pdf-lib/**/*",
+      "./node_modules/@pdf-lib/**/*",
+      "./node_modules/pako/**/*",
+      "./node_modules/tslib/**/*",
+    ],
+  },
   poweredByHeader: false,
   devIndicators: false,
   images: {

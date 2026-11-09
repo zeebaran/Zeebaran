@@ -10,7 +10,7 @@ const eyebrow = "mb-3 block text-eyebrow font-bold uppercase tracking-[0.18em] t
 const statusCls: Record<Status, [string, string]> = {
   "Under Validation": ["border-stone-200 bg-stone-100 text-stone-600", "bg-stone-400"],
   "In Field": ["border-leaf/40 bg-leaf/15 text-[#3b6000]", "bg-leaf"],
-  "In Development": ["border-orange/30 bg-orange/10 text-[#FE6901]", "bg-orange"],
+  "In Development": ["border-orange/30 bg-orange/10 text-[#a34404]", "bg-orange"],
 };
 
 export function InnovationHero() {

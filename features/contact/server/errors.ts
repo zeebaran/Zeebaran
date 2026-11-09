@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 export class EnquiryError extends Error {
   constructor(
     public status: number,
@@ -8,11 +9,29 @@ export class EnquiryError extends Error {
 }
 export function errorResponse(error: unknown) {
   if (error instanceof EnquiryError)
-    return Response.json({ error: error.message }, { status: error.status });
-  console.error("Enquiry service failed", error instanceof Error ? error.name : "UnknownError");
+    return Response.json(
+      { error: error.message },
+      {
+        status: error.status,
+        headers:
+          error.status === 429
+            ? { "Retry-After": String(900 - (Math.floor(Date.now() / 1000) % 900)) }
+            : undefined,
+      },
+    );
+  const reference = randomUUID();
+  console.error(
+    JSON.stringify({
+      event: "enquiry.failure",
+      reference,
+      errorType: error instanceof Error ? error.name : "UnknownError",
+    }),
+  );
   return Response.json(
     {
-      error: "The enquiry desk is unavailable. Your form is still here. Please retry or use email.",
+      error:
+        "The enquiry desk is unavailable. Your form is still here. Please retry or use email. Reference: " +
+        reference,
     },
     { status: 503 },
   );

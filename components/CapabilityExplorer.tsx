@@ -50,7 +50,7 @@ export function CapabilityExplorer() {
                 <span
                   className={
                     "mb-1 block text-[0.6875rem] font-bold " +
-                    (selected === i ? "text-[#FE6901]" : "text-forest/75")
+                    (selected === i ? "text-[#a34404]" : "text-forest/75")
                   }
                 >
                   {String(i + 1).padStart(2, "0")}
@@ -82,7 +82,7 @@ export function CapabilityExplorer() {
                 <dt
                   className={
                     "text-eyebrow font-bold uppercase tracking-[0.16em] " +
-                    (label === "Constraint answered" ? "text-[#FE6901]" : "text-green")
+                    (label === "Constraint answered" ? "text-[#a34404]" : "text-green")
                   }
                 >
                   {label}

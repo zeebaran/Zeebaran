@@ -11,14 +11,14 @@ import type { CSSProperties } from "react";
 
 const seasonColour: Record<string, string> = {
   Early: "bg-leaf/20 text-green",
-  Mid: "bg-orange/15 text-[#FE6901]",
+  Mid: "bg-orange/15 text-[#a34404]",
   Late: "bg-forest/10 text-forest",
   "Very Late": "bg-green/10 text-green",
 };
 
 function Badge({ label }: { label: string }) {
   return (
-    <span className="rounded-full bg-orange/15 px-2.5 py-1 text-[0.6rem] font-bold uppercase tracking-widest text-[#FE6901]">
+    <span className="rounded-full bg-orange/15 px-2.5 py-1 text-[0.6rem] font-bold uppercase tracking-widest text-[#a34404]">
       {label}
     </span>
   );

@@ -223,17 +223,17 @@
   color: #628626;
 }
 .btn-orange {
-  color: white;
+  color: #192914;
 }
 .btn-orange:hover {
-  color: white;
+  color: #192914;
 }
 .btn-orange.hover\:bg-forest:hover {
   color: white;
 }
 .text-orange,
 .hover\:text-orange:hover {
-  color: #FE6901;
+  color: #a34404;
 }
 .font-mono {
   font-variant-numeric: tabular-nums;
@@ -372,7 +372,7 @@
   }
   #hero-intro > div:first-child > div:first-child,
   #query-section > div:first-child > div {
-    font-size: 0.48rem;
+    font-size: 0.625rem;
   }
   .enquiry-desk :is(input, select, textarea) {
     font-size: 16px;
@@ -411,5 +411,41 @@
   #hero-intro > div:first-child > div:first-child,
   #query-section > div:first-child > div {
     max-width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .word-rise,
+  .hero-rise {
+    animation: none !important;
+    transform: none;
+    opacity: 1;
+  }
+}
+@media (max-width: 639px) {
+  #main h1 {
+    text-wrap: wrap;
+  }
+}
+
+@media (max-width: 639px) {
+  :is(h1, h2, h3):has(.word) {
+    contain: inline-size;
+    overflow-x: clip;
+    overflow-clip-margin: 0;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 639px) {
+  :is(h1, h2, h3) .word,
+  :is(h1, h2, h3) span:has(> .word) {
+    max-inline-size: 100%;
+    overflow-wrap: anywhere;
+  }
+  .enquiry-desk,
+  .enquiry-desk form {
+    min-inline-size: 0;
+    max-inline-size: 100%;
   }
 }

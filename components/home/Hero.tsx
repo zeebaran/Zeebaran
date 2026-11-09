@@ -11,6 +11,14 @@ export function Hero() {
       id="hero-intro"
       className="relative mx-auto max-w-7xl px-4 pb-16 pt-12 sm:px-6 sm:pb-24 sm:pt-20 lg:px-8"
     >
+      <link
+        rel="preload"
+        as="image"
+        type="image/avif"
+        media="(max-width: 639px)"
+        imageSrcSet="/images/home/hero-mobile-480.avif 480w, /images/home/hero-mobile-720.avif 720w"
+        imageSizes="calc(100vw - 32px)"
+      />
       <div className="mx-auto flex max-w-4xl flex-col items-center text-center">
         <div className="hero-rise mb-6 inline-flex items-center gap-1 rounded-full border border-green/20 bg-green/10 px-2 py-0.5 text-[0.48rem] font-semibold uppercase tracking-[0.1em] text-green shadow-sm sm:mb-8 sm:gap-2.5 sm:px-4 sm:py-1.5 sm:text-eyebrow sm:tracking-[0.18em]">
           <span className="whitespace-nowrap">Zeebaran · Himalayan Horticulture Platform</span>
@@ -60,18 +68,27 @@ export function Hero() {
 
       {/* Hero image card */}
       <div
-        className="hero-rise hero-frame group relative w-full overflow-hidden rounded-3xl border border-green/15 shadow-2xl"
+        className="hero-frame group relative w-full overflow-hidden rounded-3xl border border-green/15 shadow-2xl"
         style={d(0.5)}
       >
         <div className="hero-landscape relative aspect-[4/3] w-full overflow-hidden bg-forest/20 sm:aspect-[16/7]">
-          <Image
-            src="/images/home/Home_Desktop_2400x1140_New.webp"
-            alt="High-altitude Himalayan apple orchards in the Kashmir valley with snow-capped mountains"
-            fill
-            priority
-            sizes="(min-width: 1280px) 1216px, 100vw"
-            className="object-cover transition-transform duration-1000 ease-out"
-          />
+          <picture>
+            <source
+              type="image/avif"
+              media="(max-width: 639px)"
+              srcSet="/images/home/hero-mobile-480.avif 480w, /images/home/hero-mobile-720.avif 720w"
+              sizes="calc(100vw - 32px)"
+            />
+            <Image
+              src="/images/home/Home_Desktop_2400x1140_New.webp"
+              alt="High-altitude Himalayan apple orchards in the Kashmir valley with snow-capped mountains"
+              fill
+              fetchPriority="high"
+              loading="eager"
+              sizes="(min-width: 1280px) 1216px, 100vw"
+              className="object-cover transition-transform duration-1000 ease-out"
+            />
+          </picture>
           <div className="absolute inset-0 bg-gradient-to-t from-forest/65 via-transparent to-black/10" />
         </div>
 

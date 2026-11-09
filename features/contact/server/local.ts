@@ -3,7 +3,8 @@ import { mkdirSync } from "node:fs";
 import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { EnquiryError } from "./errors";
-import { hasPdfHeader, type Submission } from "../schema";
+import { validatePdf } from "./pdf";
+import { type Submission } from "../schema";
 
 let connection: DatabaseSync | undefined;
 function db() {
@@ -37,8 +38,15 @@ export function issueLocal(ticket: string, id: string, size: number) {
     .run(ticket, id, size, Date.now() + 600000);
   return { ticket, url: "/api/enquiries/attachments/" + ticket, fields: null };
 }
-export function putLocal(ticket: string, data: Buffer) {
-  if (!hasPdfHeader(data)) throw new EnquiryError(422, "The attachment must contain a PDF.");
+export function ticketSize(ticket: string) {
+  const row = db()
+    .prepare("SELECT size FROM uploads WHERE ticket=? AND expires>? AND data IS NULL")
+    .get(ticket, Date.now());
+  if (!row) throw new EnquiryError(409, "Upload expired or unavailable.");
+  return Number(row.size);
+}
+export async function putLocal(ticket: string, data: Buffer) {
+  await validatePdf(data);
   const result = db()
     .prepare("UPDATE uploads SET data=? WHERE ticket=? AND size=? AND expires>? AND data IS NULL")
     .run(data, ticket, data.length, Date.now());

@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 const nodes = [
   { x: 110, y: 80, name: "Baramulla", sub: "1,580m AMSL", tx: 80, ty: 65, kind: "field" },
   { x: 180, y: 110, name: "Srinagar HQ", sub: "Executive Command", tx: 194, ty: 108, kind: "hq" },
@@ -31,7 +31,11 @@ const stationNotes = [
   "2,250 m · High-altitude field trials and grower advisory in South Kashmir.",
   "National gateway · Institutional liaison and distribution coordination in Vasant Kunj.",
 ];
+const subscribe = () => () => {};
+const ready = () => true;
+const fallback = () => false;
 export function RegionMap() {
+  const hydrated = useSyncExternalStore(subscribe, ready, fallback);
   const [selected, select] = useState(1);
   return (
     <div className="w-full max-w-lg">
@@ -104,6 +108,7 @@ export function RegionMap() {
             key={n.name}
             type="button"
             aria-label={"Show " + n.name}
+            disabled={!hydrated}
             aria-pressed={selected === i}
             onClick={() => select(i)}
             style={{ left: (n.x / 520) * 100 + "%", top: (n.y / 266) * 100 + "%" }}

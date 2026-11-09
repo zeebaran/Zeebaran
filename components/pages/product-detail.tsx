@@ -45,7 +45,7 @@ export function ProductDetailPage({ product }: { product: Product }) {
               <div className="hero-rise mb-5 flex flex-wrap items-center gap-2">
                 <Eyebrow>{product.eyebrow}</Eyebrow>
                 {product.badge && (
-                  <span className="rounded-full bg-orange/15 px-2.5 py-1 text-[0.6rem] font-bold uppercase tracking-widest text-[#FE6901]">
+                  <span className="rounded-full bg-orange/15 px-2.5 py-1 text-[0.6rem] font-bold uppercase tracking-widest text-[#a34404]">
                     {product.badge}
                   </span>
                 )}

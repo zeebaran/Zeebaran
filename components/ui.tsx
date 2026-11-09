@@ -25,7 +25,7 @@ export function Button({
     "group inline-flex items-center gap-2 rounded-full px-6 py-3 text-[0.8125rem] font-semibold tracking-wide transition duration-300 ease-out active:scale-[0.98]";
   const v = {
     primary: "bg-green text-white hover:bg-forest",
-    orange: "bg-orange text-white hover:bg-[#ff8230]",
+    orange: "bg-orange text-ink hover:bg-[#ff8230]",
     ghost:
       "border border-forest/25 text-forest hover:border-forest hover:bg-forest hover:text-white",
     light: "border border-white/40 text-white hover:bg-white hover:text-forest",

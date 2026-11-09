@@ -1,3 +1,4 @@
+import { figures } from "./figures";
 /** Copy for the Home page. Source: approved Stitch design. */
 export const thumbs = [
   { src: "/images/home/thumb-1.jpg", alt: "Himalayan valley trees", label: "01 · Terrain" },
@@ -48,7 +49,7 @@ export const chain = [
 
 export const homeStats = [
   {
-    to: 18000,
+    to: figures.growersReached,
     suffix: "+",
     unit: "",
     label: "Growers Reached",
@@ -56,7 +57,7 @@ export const homeStats = [
     foot: "Cumulative In Field",
   },
   {
-    to: 3000,
+    to: figures.developedHectares,
     suffix: "+",
     unit: "ha",
     label: "Orchards Developed",
@@ -64,7 +65,7 @@ export const homeStats = [
     foot: "High Density Footprint",
   },
   {
-    to: 3000,
+    to: figures.orchardsPerSeason,
     suffix: "+",
     unit: "",
     label: "Orchards Built / Season",
@@ -72,7 +73,7 @@ export const homeStats = [
     foot: "Per Season Velocity",
   },
   {
-    to: 30000,
+    to: figures.storageTonnes,
     suffix: "",
     unit: "MT",
     label: "Storage Capacity",
@@ -80,7 +81,7 @@ export const homeStats = [
     foot: "Infrastructure Assets",
   },
   {
-    to: 18,
+    to: figures.yearsInHorticulture,
     suffix: "+",
     unit: "yrs",
     label: "Himalayan Horticulture",

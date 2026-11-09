@@ -1,3 +1,4 @@
+import { PDFDocument } from "pdf-lib";
 import { expect, test } from "@playwright/test";
 import { PRODUCTS } from "../../lib/products-content";
 const pages = [
@@ -88,10 +89,17 @@ test("contact desk routing, PDF validation and local delivery", async ({ page })
   await expect(page.locator(".attachment-field").getByRole("alert")).toContainText(
     "contains a PDF",
   );
+  await expect(page.getByRole("button", { name: "Send message" })).toBeDisabled();
+  await page.getByRole("button", { name: "Remove attachment" }).click();
+  await expect(page.getByRole("button", { name: "Send message" })).toBeEnabled();
   await page.locator("#proposal").setInputFiles({
     name: "test.pdf",
     mimeType: "application/pdf",
-    buffer: Buffer.from("%PDF-1.7\nfixture\n%%EOF"),
+    buffer: await (async () => {
+      const pdf = await PDFDocument.create();
+      pdf.addPage();
+      return Buffer.from(await pdf.save());
+    })(),
   });
   await expect(page.locator(".upload-target")).toContainText("test.pdf");
   await page.getByRole("button", { name: "Send message" }).click();
@@ -158,4 +166,25 @@ test("the archive typefaces and word reveals work with visitor motion preference
     "hidden",
   );
   await expect(page.locator("h1 .word").first()).toHaveCSS("transform", "none");
+});
+
+test("private enquiry fields cannot enter a URL when JavaScript is unavailable", async ({
+  browser,
+  baseURL,
+}) => {
+  const ctx = await browser.newContext({ javaScriptEnabled: false, baseURL });
+  try {
+    const p = await ctx.newPage();
+    for (const path of ["/contact", "/contact/simple"]) {
+      await p.goto(path);
+      await expect(p.locator("#email")).toBeDisabled();
+      await expect(p.locator('form[aria-label="Zeebaran enquiry"]')).toHaveAttribute(
+        "method",
+        "post",
+      );
+      await expect(p.getByRole("link", { name: "email the Zeebaran team" })).toBeVisible();
+    }
+  } finally {
+    await ctx.close();
+  }
 });

@@ -1,4 +1,5 @@
 import "server-only";
+import { isIP } from "node:net";
 import { createHash, randomUUID } from "node:crypto";
 import type { Submission } from "../schema";
 import { EnquiryError } from "./errors";
@@ -20,9 +21,15 @@ export async function limit(req: Request, action: string) {
   available();
   const windowMs = 15 * 60 * 1000;
   const slot = Math.floor(Date.now() / windowMs);
-  const address = process.env.VERCEL
-    ? req.headers.get("x-vercel-forwarded-for")?.split(",")[0]?.trim() || "unknown"
-    : "local";
+  const address = isLocal()
+    ? "development"
+    : process.env.VERCEL
+      ? req.headers.get("x-vercel-forwarded-for")?.split(",")[0]?.trim()
+      : process.env.TRUSTED_CLIENT_IP_HEADER
+        ? req.headers.get(process.env.TRUSTED_CLIENT_IP_HEADER)?.trim()
+        : null;
+  if (!isLocal() && (!address || !isIP(address)))
+    throw new EnquiryError(503, "The enquiry desk is unavailable. Please use email.");
   const key = createHash("sha256").update([slot, action, address].join("|")).digest("hex");
   const until = (slot + 1) * windowMs;
   if (isLocal()) (await import("./local")).limitLocal(key, until);
