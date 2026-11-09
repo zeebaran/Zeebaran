@@ -1,0 +1,415 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --green: #06642d;
+  --orange: #fe6901;
+  --leaf: #8cc63f;
+  --forest: #123b25;
+  --cream: #f7f5ea;
+  --ink: #16271d;
+  --muted: #5e6b62;
+  --line: rgba(18, 59, 37, 0.12);
+}
+
+@layer base {
+  html {
+    scroll-padding-top: 5.5rem;
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-cream font-sans text-body font-normal text-muted antialiased;
+    font-feature-settings: "ss01", "cv11";
+    text-rendering: optimizeLegibility;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-medium text-forest;
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+  ::selection {
+    background: var(--leaf);
+    color: var(--forest);
+  }
+  :focus-visible {
+    outline: 2px solid var(--orange);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+}
+
+@layer components {
+  .wrap {
+    @apply mx-auto w-full max-w-page px-5 sm:px-8 lg:px-10;
+  }
+  .section {
+    @apply py-20 md:py-28 lg:py-32;
+  }
+  .panel {
+    @apply mx-2.5 rounded-[1.5rem] bg-white sm:mx-4 sm:rounded-panel lg:mx-6;
+  }
+  .eyebrow {
+    @apply inline-flex items-center gap-3 text-eyebrow font-semibold uppercase text-green;
+  }
+  .eyebrow::before {
+    content: "";
+    width: 1.75rem;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.55;
+  }
+  .accent {
+    color: var(--green);
+    text-decoration: underline;
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 0.16em;
+    text-decoration-color: rgba(6, 100, 45, 0.45);
+  }
+  .accent-leaf {
+    color: var(--leaf);
+  }
+  .home-wrap {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+  .card {
+    @apply rounded-card border border-line/60 bg-white shadow-card transition duration-500 ease-out;
+  }
+  .card-hover:hover {
+    @apply -translate-y-1 shadow-lift;
+  }
+  .micro {
+    @apply text-eyebrow font-semibold uppercase text-green;
+  }
+  .kv {
+    @apply grid grid-cols-[minmax(0,6rem)_minmax(0,1fr)] gap-x-4 border-t border-line py-3 text-small sm:grid-cols-[9rem_1fr];
+  }
+  .kv dt {
+    @apply text-eyebrow font-semibold uppercase leading-[1.7] tracking-[0.14em] text-green;
+  }
+  .kv dd {
+    @apply text-forest/85;
+  }
+  .hero-wash {
+    background:
+      radial-gradient(60rem 28rem at 12% -8%, rgba(140, 198, 63, 0.22), transparent 70%),
+      radial-gradient(40rem 22rem at 95% 0%, rgba(254, 105, 1, 0.07), transparent 70%);
+  }
+}
+
+@keyframes drift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-2%, 0, 0);
+  }
+}
+@keyframes sway {
+  0%,
+  100% {
+    transform: rotate(-1.2deg);
+  }
+  50% {
+    transform: rotate(1.2deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Above-the-fold entrance: pure CSS so it never waits on JS hydration (keeps LCP fast). */
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 18px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes word-rise {
+  from {
+    transform: translate3d(0, 108%, 0);
+  }
+  to {
+    transform: none;
+  }
+}
+.hero-rise {
+  animation: hero-rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--d, 0s);
+}
+.word-rise {
+  animation: word-rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--d, 0s);
+}
+
+/* Scroll reveals (see useScrollReveal in components/Motion.tsx). Visible by default; only hidden below the fold after hydration. */
+:root {
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+[data-reveal="hidden"] {
+  opacity: 0;
+  transform: translate3d(0, var(--y, 22px), 0);
+}
+[data-reveal="in"] {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.8s var(--ease) var(--d, 0s),
+    transform 0.8s var(--ease) var(--d, 0s);
+}
+
+[data-reveal-words="hidden"] .word {
+  transform: translate3d(0, 108%, 0);
+}
+[data-reveal-words="in"] .word {
+  transform: none;
+  transition: transform 0.9s var(--ease) var(--d, 0s);
+}
+
+[data-reveal-group="hidden"] > .stagger-item {
+  opacity: 0;
+  transform: translate3d(0, 24px, 0);
+}
+[data-reveal-group="in"] > .stagger-item {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.8s var(--ease) calc(var(--i, 0) * var(--gap, 0.09s)),
+    transform 0.8s var(--ease) calc(var(--i, 0) * var(--gap, 0.09s));
+}
+.stagger-item:nth-child(1) {
+  --i: 0;
+}
+.stagger-item:nth-child(2) {
+  --i: 1;
+}
+.stagger-item:nth-child(3) {
+  --i: 2;
+}
+.stagger-item:nth-child(4) {
+  --i: 3;
+}
+.stagger-item:nth-child(5) {
+  --i: 4;
+}
+.stagger-item:nth-child(6) {
+  --i: 5;
+}
+.stagger-item:nth-child(n + 7) {
+  --i: 6;
+}
+
+/* Use the brand colours at readable contrast for text, retaining the brighter colours for fills. */
+.accent-leaf {
+  color: #628626;
+}
+.btn-orange {
+  color: white;
+}
+.btn-orange:hover {
+  color: white;
+}
+.btn-orange.hover\:bg-forest:hover {
+  color: white;
+}
+.text-orange,
+.hover\:text-orange:hover {
+  color: #FE6901;
+}
+.font-mono {
+  font-variant-numeric: tabular-nums;
+}
+@media (min-width: 768px) {
+  .history-line::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 50%;
+    width: 1px;
+    background: linear-gradient(transparent, #8cc63f99, transparent);
+  }
+}
+@keyframes chain-reading {
+  from {
+    opacity: 0.4;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.chain-reading {
+  animation: chain-reading 0.28s var(--ease);
+}
+
+@layer components {
+  .enquiry-desk {
+    @apply min-w-0 rounded-3xl border border-line bg-cream/60 p-5 sm:p-8;
+  }
+  .enquiry-desk .form-fields {
+    @apply m-0 min-w-0 space-y-4 border-0 p-0;
+  }
+  .enquiry-desk .desk-heading {
+    @apply mb-5 border-b border-line pb-4;
+  }
+  .enquiry-desk .desk-heading .eyebrow {
+    @apply text-[0.625rem] tracking-wider;
+  }
+  .enquiry-desk .desk-heading .eyebrow::before {
+    content: none;
+  }
+  .enquiry-desk h3 {
+    @apply text-small font-bold text-forest;
+  }
+  .enquiry-desk .focus-topics legend {
+    @apply mb-2 text-eyebrow font-semibold uppercase text-green;
+  }
+  .enquiry-desk .focus-topics > div {
+    @apply flex flex-wrap gap-1.5;
+  }
+  .enquiry-desk .focus-topics button {
+    @apply rounded-full border border-line bg-white px-3 py-1.5 text-xs font-medium text-forest transition-colors hover:border-green;
+  }
+  .enquiry-desk .focus-topics [aria-pressed="true"] {
+    @apply border-green bg-green text-white;
+  }
+  .enquiry-desk .field-pair {
+    @apply grid min-w-0 gap-4 sm:grid-cols-2;
+  }
+  .enquiry-desk label:not(.upload-target),
+  .attachment-field > span {
+    @apply block min-w-0 text-xs font-semibold text-forest;
+  }
+  .enquiry-desk label small,
+  .enquiry-desk .attachment-field small {
+    @apply font-normal text-muted;
+  }
+  .enquiry-desk :is(input:not([type="file"]), select, textarea) {
+    @apply mt-1.5 block w-full min-w-0 rounded-xl border border-line bg-white px-3.5 py-2.5 font-normal text-forest placeholder:text-muted focus:border-green;
+    font: inherit;
+    font-weight: 400;
+    font-size: 1rem;
+  }
+  .enquiry-desk textarea {
+    @apply resize-y;
+  }
+  .enquiry-desk select {
+    @apply pr-6;
+    text-overflow: ellipsis;
+  }
+  .enquiry-desk [aria-invalid="true"] {
+    border-color: #ad4523;
+  }
+  .enquiry-desk .field-error,
+  .enquiry-desk .delivery-error {
+    @apply mt-1 block text-xs font-medium text-[#963c1a];
+  }
+  .enquiry-desk .delivery-error a {
+    @apply underline underline-offset-2;
+  }
+  .enquiry-desk .delivery-error small {
+    @apply block;
+  }
+  .enquiry-desk .upload-target {
+    @apply mt-2 flex min-w-0 cursor-pointer items-center gap-3 rounded-xl border border-dashed border-green/40 bg-white px-4 py-3 text-small font-semibold text-green hover:border-green;
+  }
+  .enquiry-desk .upload-target span {
+    overflow-wrap: anywhere;
+  }
+  .enquiry-desk .upload-target small {
+    @apply mt-1 block text-xs;
+  }
+  .enquiry-desk input[type="file"]:focus-visible + label {
+    outline: 2px solid var(--green);
+    outline-offset: 3px;
+  }
+  .enquiry-desk .remove-file {
+    @apply mt-2 inline-flex items-center gap-1 text-xs text-green underline;
+  }
+  .enquiry-desk .send-enquiry {
+    @apply inline-flex items-center gap-2 rounded-full bg-green px-6 py-3 text-[0.8125rem] font-semibold text-white shadow transition hover:bg-forest disabled:opacity-60;
+  }
+  .enquiry-success {
+    @apply flex flex-col items-start gap-3 text-small;
+  }
+  .enquiry-success > svg {
+    @apply size-9 rounded-full bg-leaf/25 p-2 text-green;
+  }
+  .enquiry-success h3 {
+    @apply text-h3;
+  }
+  .enquiry-success button {
+    @apply font-semibold text-green underline underline-offset-4;
+  }
+}
+
+@media (max-width: 639px) {
+  /* Taller image on mobile so overlaid caption has room */
+  .hero-frame .hero-landscape {
+    aspect-ratio: 5 / 4;
+  }
+  #hero-intro h1 {
+    font-size: clamp(2.18rem, 0.75rem + 6vw, 2.75rem);
+  }
+  #hero-intro > div:first-child > div:first-child,
+  #query-section > div:first-child > div {
+    font-size: 0.48rem;
+  }
+  .enquiry-desk :is(input, select, textarea) {
+    font-size: 16px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-delay: 0s !important;
+    transition-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+  }
+  [data-reveal="hidden"],
+  [data-reveal-words="hidden"] .word,
+  [data-reveal-group="hidden"] > .stagger-item {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+[class~="!text-white"] .accent-leaf,
+.text-white .accent-leaf {
+  color: var(--leaf);
+}
+.kv dd {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 639px) {
+  #hero-intro .whitespace-nowrap,
+  #query-section .whitespace-nowrap {
+    white-space: normal;
+    text-wrap: balance;
+  }
+  #hero-intro > div:first-child > div:first-child,
+  #query-section > div:first-child > div {
+    max-width: 100%;
+  }
+}

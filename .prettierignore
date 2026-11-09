@@ -1,0 +1,11 @@
+.next
+node_modules
+public
+package-lock.json
+playwright-report
+test-results
+.local
+next-env.d.ts
+*.tsbuildinfo
+app/fonts
+app/opengraph-image.jpg

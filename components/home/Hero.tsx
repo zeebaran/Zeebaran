@@ -1,0 +1,176 @@
+import Image from "next/image";
+import Link from "next/link";
+import { Heading, Reveal } from "@/components/Motion";
+import type { CSSProperties } from "react";
+
+const d = (s: number) => ({ "--d": `${s}s` }) as CSSProperties;
+
+export function Hero() {
+  return (
+    <section
+      id="hero-intro"
+      className="relative mx-auto max-w-7xl px-4 pb-16 pt-12 sm:px-6 sm:pb-24 sm:pt-20 lg:px-8"
+    >
+      <div className="mx-auto flex max-w-4xl flex-col items-center text-center">
+        <div className="hero-rise mb-6 inline-flex items-center gap-1 rounded-full border border-green/20 bg-green/10 px-2 py-0.5 text-[0.48rem] font-semibold uppercase tracking-[0.1em] text-green shadow-sm sm:mb-8 sm:gap-2.5 sm:px-4 sm:py-1.5 sm:text-eyebrow sm:tracking-[0.18em]">
+          <span className="whitespace-nowrap">Zeebaran · Himalayan Horticulture Platform</span>
+        </div>
+
+        <Heading
+          as="h1"
+          immediate
+          delay={0.1}
+          tone="leaf"
+          text={"Rooted in the valley.\n{Grown for the future.}"}
+          className="mb-6 text-display sm:mb-6"
+        />
+
+        <p
+          className="hero-rise mb-8 max-w-3xl text-[0.9rem] leading-relaxed text-forest/80 sm:mb-10 sm:text-lead"
+          style={d(0.3)}
+        >
+          Transforming high-altitude horticulture across Kashmir through precision canopy
+          architecture, cold-chain science, and grower empowerment.
+        </p>
+
+        <div
+          className="hero-rise mb-10 flex flex-wrap items-center justify-center gap-4 sm:mb-12"
+          style={d(0.4)}
+        >
+          <Link
+            href="/platform"
+            className="btn-orange inline-flex items-center justify-center gap-2 rounded-full bg-orange px-8 py-3.5 text-[0.8125rem] font-semibold text-white shadow-md transition-all duration-300 hover:bg-[#e05d00] hover:shadow-lg"
+          >
+            <span>Explore Platform</span>
+            <span className="text-base leading-none" aria-hidden>
+              →
+            </span>
+          </Link>
+          <Link
+            href="/about"
+            className="inline-flex items-center justify-center gap-2 rounded-full border border-green/20 bg-white/90 px-7 py-3.5 text-[0.8125rem] font-semibold text-forest shadow-sm transition-all duration-300 hover:border-leaf hover:bg-white"
+          >
+            <svg className="size-4 text-green" fill="currentColor" viewBox="0 0 20 20" aria-hidden>
+              <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+            </svg>
+            <span>Our Mission</span>
+          </Link>
+        </div>
+      </div>
+
+      {/* Hero image card */}
+      <div
+        className="hero-rise hero-frame group relative w-full overflow-hidden rounded-3xl border border-green/15 shadow-2xl"
+        style={d(0.5)}
+      >
+        <div className="hero-landscape relative aspect-[4/3] w-full overflow-hidden bg-forest/20 sm:aspect-[16/7]">
+          <Image
+            src="/images/home/Home_Desktop_2400x1140_New.webp"
+            alt="High-altitude Himalayan apple orchards in the Kashmir valley with snow-capped mountains"
+            fill
+            priority
+            sizes="(min-width: 1280px) 1216px, 100vw"
+            className="object-cover transition-transform duration-1000 ease-out"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-forest/65 via-transparent to-black/10" />
+        </div>
+
+        {/* Mobile: caption + badges stacked bottom-left. Desktop: caption left, badges right */}
+        <div className="hero-caption absolute inset-x-3 bottom-3 flex flex-col items-start gap-2 sm:inset-x-8 sm:bottom-8 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
+          <div className="max-w-[16rem] rounded-xl border border-white/30 bg-white/60 p-2.5 shadow-lg backdrop-blur-md sm:max-w-sm sm:rounded-2xl sm:p-5">
+            <div className="mb-0.5 flex items-center gap-1 text-[0.52rem] font-bold uppercase tracking-[0.12em] text-green sm:mb-1 sm:gap-2 sm:text-eyebrow sm:tracking-[0.14em]">
+              <span className="size-1 rounded-full bg-leaf sm:size-2" />
+              <span>High-Altitude Canopy</span>
+            </div>
+            <p className="text-[0.62rem] font-medium leading-snug text-forest sm:text-small">
+              High-density rootstocks flourishing under Himalayan morning sunlight across the
+              Kashmir valley floor.
+            </p>
+          </div>
+          <div className="flex flex-row gap-1.5 sm:flex-nowrap sm:gap-3">
+            {[
+              ["18,000+", "Growers Empowered"],
+              ["30,000 MT", "Cold-Chain Network"],
+            ].map(([n, l]) => (
+              <div
+                key={l}
+                className="flex items-center gap-1 rounded-full border border-white/20 bg-forest/80 px-2.5 py-1 text-[0.58rem] font-medium text-white backdrop-blur-md sm:gap-2 sm:px-4 sm:py-2 sm:text-xs"
+              >
+                <span className="font-bold text-[#d5f39c]">{n}</span> {l}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="flex flex-col items-center justify-center pb-1 pt-4 text-forest/75 transition-colors hover:text-green sm:pb-2 sm:pt-8">
+        <a
+          href="#query-section"
+          className="inline-flex flex-col items-center gap-1.5 text-eyebrow font-semibold uppercase tracking-[0.18em]"
+        >
+          <span>Scroll to explore</span>
+          <svg
+            className="size-4 animate-bounce text-leaf"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 14l-7 7m0 0l-7-7m7 7V3"
+            />
+          </svg>
+        </a>
+      </div>
+    </section>
+  );
+}
+
+export function Query() {
+  return (
+    <section
+      id="query-section"
+      className="mx-auto max-w-5xl px-4 pb-12 pt-6 text-center sm:pb-16 sm:pt-16"
+    >
+      <Reveal y={10}>
+        <div className="mb-6 inline-flex items-center gap-1 rounded-full bg-green/10 px-2 py-0.5 text-[0.48rem] font-semibold uppercase tracking-[0.1em] text-green sm:gap-2 sm:px-3.5 sm:py-1.5 sm:text-eyebrow sm:tracking-[0.18em]">
+          <span className="whitespace-nowrap">Born in Kashmir · Working across the Himalayas</span>
+        </div>
+      </Reveal>
+      <Heading
+        as="h2"
+        tone="leaf"
+        text="Can a valley raise {a generation?}"
+        className="mb-6 text-display"
+      />
+      <Reveal delay={0.15}>
+        <p className="mx-auto max-w-2xl font-serif text-[clamp(1.25rem,1rem+1vw,1.5rem)] italic text-forest/70">
+          What do we really grow when we grow fruit?
+        </p>
+      </Reveal>
+      <Reveal delay={0.2} y={30}>
+        <div className="group relative mt-12 h-80 w-full overflow-hidden rounded-3xl border border-green/10 shadow-2xl sm:h-[420px]">
+          <Image
+            src="/images/home/valley.webp"
+            alt="Expansive high-density apple orchard in Kashmir"
+            fill
+            sizes="(min-width: 1024px) 990px, 100vw"
+            className="object-cover transition-transform duration-1000 ease-out "
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-forest/60 via-transparent to-black/20" />
+          <div className="absolute bottom-6 left-6 max-w-lg text-left sm:bottom-10 sm:left-10">
+            <p className="mb-1 text-eyebrow font-semibold uppercase tracking-[0.18em] text-white/80">
+              High-Density Horticulture System
+            </p>
+            <p className="font-serif text-[clamp(1.4rem,1.1rem+1vw,1.875rem)] leading-snug text-white">
+              Precision canopy architecture &amp; rootstock excellence.
+            </p>
+          </div>
+        </div>
+      </Reveal>
+    </section>
+  );
+}
