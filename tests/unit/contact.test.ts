@@ -10,6 +10,8 @@ const form = {
   name: " Orchard Team ",
   organisation: "",
   email: "grower@example.test",
+  phone: "+91 98765 43210",
+  place: "Srinagar",
   channel: "email",
   reason: "research",
   topic: null,
@@ -22,6 +24,12 @@ describe("enquiry validation", () => {
   it.each([
     { name: " " },
     { email: "invalid" },
+    { phone: "" },
+    { phone: "abc9876543" },
+    { phone: "12345" },
+    { phone: "+1234567890123456" },
+    { phone: "+91 98765\n43210" },
+    { place: " " },
     { message: "hi" },
     { reason: "unknown" },
     { topic: "unlisted" },
@@ -38,6 +46,12 @@ describe("enquiry validation", () => {
     expect(submissionSchema.safeParse(input).success).toBe(true);
     expect(submissionSchema.safeParse({ ...input, website: "spam" }).success).toBe(false);
   });
+  it.each(["+91 98765 43210", "0194-2458011", "+44 (20) 7946 0123"])(
+    "accepts formatted contact numbers: %s",
+    (phone) => {
+      expect(formSchema.parse({ ...form, phone }).phone).toBe(phone);
+    },
+  );
   it.each([
     { name: "brief.pdf", size: maxPdfBytes, valid: true },
     { name: "../secret.pdf", size: 7, valid: false },

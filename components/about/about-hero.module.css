@@ -1,0 +1,35 @@
+.layout {
+  position: relative;
+}
+.apple {
+  width: 220px;
+  max-width: 100%;
+  margin-top: 24px;
+  margin-inline: auto;
+  pointer-events: none;
+}
+.apple svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+@media (min-width: 640px) {
+  .apple {
+    width: 190px;
+  }
+}
+@media (min-width: 1200px) {
+  .apple {
+    position: absolute;
+    top: 34%;
+    right: -40px;
+    width: 240px;
+    margin: 0;
+  }
+}
+@media (min-width: 1440px) {
+  .apple {
+    right: -100px;
+    width: 280px;
+  }
+}

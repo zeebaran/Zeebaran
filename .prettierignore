@@ -9,3 +9,9 @@ next-env.d.ts
 *.tsbuildinfo
 app/fonts
 app/opengraph-image.jpg
+
+.next-admin
+
+.next-audit
+
+.next-perf

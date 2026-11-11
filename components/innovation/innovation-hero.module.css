@@ -1,0 +1,32 @@
+.layout {
+  position: relative;
+}
+.illustration {
+  margin-top: 28px;
+  max-width: 340px;
+  margin-inline: auto;
+}
+@media (min-width: 1200px) {
+  .copy {
+    max-width: calc(100% - 390px);
+  }
+  .illustration {
+    position: absolute;
+    width: 470px;
+    max-width: none;
+    right: 0;
+    top: 50%;
+    margin: 0;
+    transform: translateY(-50%);
+  }
+}
+@media (max-width: 639px) {
+  .hero {
+    padding-bottom: 24px;
+  }
+  .illustration {
+    width: 100%;
+    max-width: 320px;
+    margin-top: 12px;
+  }
+}

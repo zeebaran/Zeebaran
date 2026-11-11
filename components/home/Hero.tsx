@@ -1,5 +1,8 @@
-import Image from "next/image";
-import Link from "next/link";
+import { imageDelivery } from "@/features/media/delivery";
+import { ContentPicture, ContentPreload } from "@/features/cms/Content";
+import { ContentText } from "@/features/cms/Content";
+import { ContentImage as Image } from "@/features/cms/Content";
+import { ContentLink as Link } from "@/features/cms/Content";
 import { Heading, Reveal } from "@/components/Motion";
 import type { CSSProperties } from "react";
 
@@ -11,17 +14,18 @@ export function Hero() {
       id="hero-intro"
       className="relative mx-auto max-w-7xl px-4 pb-16 pt-12 sm:px-6 sm:pb-24 sm:pt-20 lg:px-8"
     >
-      <link
+      <ContentPreload
         rel="preload"
         as="image"
         type="image/avif"
         media="(max-width: 639px)"
-        imageSrcSet="/images/home/hero-mobile-480.avif 480w, /images/home/hero-mobile-720.avif 720w"
         imageSizes="calc(100vw - 32px)"
       />
       <div className="mx-auto flex max-w-4xl flex-col items-center text-center">
         <div className="hero-rise mb-6 inline-flex items-center gap-1 rounded-full border border-green/20 bg-green/10 px-2 py-0.5 text-[0.48rem] font-semibold uppercase tracking-[0.1em] text-green shadow-sm sm:mb-8 sm:gap-2.5 sm:px-4 sm:py-1.5 sm:text-eyebrow sm:tracking-[0.18em]">
-          <span className="whitespace-nowrap">Zeebaran · Himalayan Horticulture Platform</span>
+          <span className="whitespace-nowrap">
+            <ContentText>Zeebaran · Himalayan Horticulture Platform</ContentText>
+          </span>
         </div>
 
         <Heading
@@ -37,8 +41,10 @@ export function Hero() {
           className="hero-rise mb-8 max-w-3xl text-[0.9rem] leading-relaxed text-forest/80 sm:mb-10 sm:text-lead"
           style={d(0.3)}
         >
-          Transforming high-altitude horticulture across Kashmir through precision canopy
-          architecture, cold-chain science, and grower empowerment.
+          <ContentText>
+            Transforming high-altitude horticulture across Kashmir through precision canopy
+            architecture, cold-chain science, and grower empowerment.
+          </ContentText>
         </p>
 
         <div
@@ -47,21 +53,30 @@ export function Hero() {
         >
           <Link
             href="/platform"
-            className="btn-orange inline-flex items-center justify-center gap-2 rounded-full bg-orange px-8 py-3.5 text-[0.8125rem] font-semibold text-white shadow-md transition-all duration-300 hover:bg-[#e05d00] hover:shadow-lg"
+            className="btn-orange inline-flex items-center justify-center gap-1.5 rounded-full bg-orange px-5 py-2.5 text-[0.75rem] font-semibold text-white shadow-md transition-all duration-300 hover:bg-[#e05d00] hover:shadow-lg sm:gap-2 sm:px-8 sm:py-3.5 sm:text-[0.8125rem]"
           >
-            <span>Explore Platform</span>
-            <span className="text-base leading-none" aria-hidden>
-              →
+            <span>
+              <ContentText>Explore Platform</ContentText>
+            </span>
+            <span className="btn-arrow-nudge text-base leading-none" aria-hidden>
+              <ContentText>→</ContentText>
             </span>
           </Link>
           <Link
-            href="/about"
-            className="inline-flex items-center justify-center gap-2 rounded-full border border-green/20 bg-white/90 px-7 py-3.5 text-[0.8125rem] font-semibold text-forest shadow-sm transition-all duration-300 hover:border-leaf hover:bg-white"
+            href="/mission"
+            className="inline-flex items-center justify-center gap-1.5 rounded-full border border-green/20 bg-white/90 px-5 py-2.5 text-[0.75rem] font-semibold text-forest shadow-sm transition-all duration-300 hover:border-leaf hover:bg-white sm:gap-2 sm:px-7 sm:py-3.5 sm:text-[0.8125rem]"
           >
-            <svg className="size-4 text-green" fill="currentColor" viewBox="0 0 20 20" aria-hidden>
+            <svg
+              className="size-3 text-green sm:size-4"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+              aria-hidden
+            >
               <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
             </svg>
-            <span>Our Mission</span>
+            <span>
+              <ContentText>Our Mission</ContentText>
+            </span>
           </Link>
         </div>
       </div>
@@ -72,15 +87,19 @@ export function Hero() {
         style={d(0.5)}
       >
         <div className="hero-landscape relative aspect-[4/3] w-full overflow-hidden bg-forest/20 sm:aspect-[16/7]">
-          <picture>
+          <ContentPicture source="asset:banners/home/home-desktop-2400x1140-new-webp">
             <source
-              type="image/avif"
               media="(max-width: 639px)"
-              srcSet="/images/home/hero-mobile-480.avif 480w, /images/home/hero-mobile-720.avif 720w"
+              srcSet={
+                imageDelivery("asset:banners/home/hero-mobile-480-avif", 480) +
+                " 480w, " +
+                imageDelivery("asset:banners/home/hero-mobile-720-avif", 720) +
+                " 720w"
+              }
               sizes="calc(100vw - 32px)"
             />
             <Image
-              src="/images/home/Home_Desktop_2400x1140_New.webp"
+              src="asset:banners/home/home-desktop-2400x1140-new-webp"
               alt="High-altitude Himalayan apple orchards in the Kashmir valley with snow-capped mountains"
               fill
               fetchPriority="high"
@@ -88,7 +107,9 @@ export function Hero() {
               sizes="(min-width: 1280px) 1216px, 100vw"
               className="object-cover transition-transform duration-1000 ease-out"
             />
-          </picture>
+          </ContentPicture>
+          {/* Morning light shimmer sweep — plays once on load */}
+          <div className="hero-shimmer" aria-hidden="true" />
           <div className="absolute inset-0 bg-gradient-to-t from-forest/65 via-transparent to-black/10" />
         </div>
 
@@ -97,37 +118,48 @@ export function Hero() {
           <div className="max-w-[16rem] rounded-xl border border-white/30 bg-white/60 p-2.5 shadow-lg backdrop-blur-md sm:max-w-sm sm:rounded-2xl sm:p-5">
             <div className="mb-0.5 flex items-center gap-1 text-[0.52rem] font-bold uppercase tracking-[0.12em] text-green sm:mb-1 sm:gap-2 sm:text-eyebrow sm:tracking-[0.14em]">
               <span className="size-1 rounded-full bg-leaf sm:size-2" />
-              <span>High-Altitude Canopy</span>
+              <span>
+                <ContentText>High-Altitude Canopy</ContentText>
+              </span>
             </div>
             <p className="text-[0.62rem] font-medium leading-snug text-forest sm:text-small">
-              High-density rootstocks flourishing under Himalayan morning sunlight across the
-              Kashmir valley floor.
+              <ContentText>
+                High-density rootstocks flourishing under Himalayan morning sunlight across the
+                Kashmir valley floor.
+              </ContentText>
             </p>
           </div>
           <div className="flex flex-row gap-1.5 sm:flex-nowrap sm:gap-3">
-            {[
-              ["18,000+", "Growers Empowered"],
-              ["30,000 MT", "Cold-Chain Network"],
-            ].map(([n, l]) => (
-              <div
-                key={l}
-                className="flex items-center gap-1 rounded-full border border-white/20 bg-forest/80 px-2.5 py-1 text-[0.58rem] font-medium text-white backdrop-blur-md sm:gap-2 sm:px-4 sm:py-2 sm:text-xs"
-              >
-                <span className="font-bold text-[#d5f39c]">{n}</span> {l}
-              </div>
-            ))}
+            <ContentText>
+              {[
+                ["18,000+", "Growers Empowered"],
+                ["30,000 MT", "Cold-Chain Network"],
+              ].map(([n, l]) => (
+                <div
+                  key={l}
+                  className="flex items-center gap-1 rounded-full border border-white/20 bg-forest/80 px-2.5 py-1 text-[0.58rem] font-medium text-white backdrop-blur-md sm:gap-2 sm:px-4 sm:py-2 sm:text-xs"
+                >
+                  <span className="font-bold text-[#d5f39c]">
+                    <ContentText>{n}</ContentText>
+                  </span>{" "}
+                  <ContentText>{l}</ContentText>
+                </div>
+              ))}
+            </ContentText>
           </div>
         </div>
       </div>
 
-      <div className="flex flex-col items-center justify-center pb-1 pt-4 text-forest/75 transition-colors hover:text-green sm:pb-2 sm:pt-8">
+      <div className="flex flex-col items-center justify-center pb-2 pt-8 text-forest/75 transition-colors hover:text-green sm:pb-4 sm:pt-10">
         <a
           href="#query-section"
-          className="inline-flex flex-col items-center gap-1.5 text-eyebrow font-semibold uppercase tracking-[0.18em]"
+          className="inline-flex flex-col items-center gap-2 text-eyebrow font-semibold uppercase tracking-[0.18em]"
         >
-          <span>Scroll to explore</span>
+          <span>
+            <ContentText>Scroll to explore</ContentText>
+          </span>
           <svg
-            className="size-4 animate-bounce text-leaf"
+            className="size-5 animate-bounce text-leaf"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -154,7 +186,9 @@ export function Query() {
     >
       <Reveal y={10}>
         <div className="mb-6 inline-flex items-center gap-1 rounded-full bg-green/10 px-2 py-0.5 text-[0.48rem] font-semibold uppercase tracking-[0.1em] text-green sm:gap-2 sm:px-3.5 sm:py-1.5 sm:text-eyebrow sm:tracking-[0.18em]">
-          <span className="whitespace-nowrap">Born in Kashmir · Working across the Himalayas</span>
+          <span className="whitespace-nowrap">
+            <ContentText>Born in Kashmir · Working across the Himalayas</ContentText>
+          </span>
         </div>
       </Reveal>
       <Heading
@@ -165,25 +199,25 @@ export function Query() {
       />
       <Reveal delay={0.15}>
         <p className="mx-auto max-w-2xl font-serif text-[clamp(1.25rem,1rem+1vw,1.5rem)] italic text-forest/70">
-          What do we really grow when we grow fruit?
+          <ContentText>What do we really grow when we grow fruit?</ContentText>
         </p>
       </Reveal>
       <Reveal delay={0.2} y={30}>
-        <div className="group relative mt-12 h-80 w-full overflow-hidden rounded-3xl border border-green/10 shadow-2xl sm:h-[420px]">
+        <div className="group valley-reveal relative mt-12 h-80 w-full overflow-hidden rounded-3xl border border-green/10 shadow-2xl sm:h-[420px]">
           <Image
-            src="/images/home/valley.webp"
+            src="asset:orchards/valley-webp"
             alt="Expansive high-density apple orchard in Kashmir"
             fill
             sizes="(min-width: 1024px) 990px, 100vw"
-            className="object-cover transition-transform duration-1000 ease-out "
+            className="img-far-zoom object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-forest/60 via-transparent to-black/20" />
           <div className="absolute bottom-6 left-6 max-w-lg text-left sm:bottom-10 sm:left-10">
             <p className="mb-1 text-eyebrow font-semibold uppercase tracking-[0.18em] text-white/80">
-              High-Density Horticulture System
+              <ContentText>High-Density Horticulture System</ContentText>
             </p>
             <p className="font-serif text-[clamp(1.4rem,1.1rem+1vw,1.875rem)] leading-snug text-white">
-              Precision canopy architecture &amp; rootstock excellence.
+              <ContentText>Precision canopy architecture &amp; rootstock excellence.</ContentText>
             </p>
           </div>
         </div>

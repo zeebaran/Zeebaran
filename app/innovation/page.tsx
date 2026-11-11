@@ -1,3 +1,4 @@
+import { PageContent } from "@/features/cms/server/public";
 import {
   InnovationHero,
   Laboratory,
@@ -16,13 +17,17 @@ export const metadata = pageMeta(
 
 export default function Innovation() {
   return (
-    <>
-      <InnovationHero />
-      <Laboratory />
-      <DigitalExtension />
-      <TechnicalPriorities />
-      <AdoptionGap />
-      <Callout />
-    </>
+    <PageContent page="innovation">
+      {
+        <>
+          <InnovationHero />
+          <Laboratory />
+          <DigitalExtension />
+          <TechnicalPriorities />
+          <AdoptionGap />
+          <Callout />
+        </>
+      }
+    </PageContent>
   );
 }

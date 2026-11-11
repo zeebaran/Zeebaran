@@ -1,0 +1,436 @@
+/* The motion is derived from three marks in a field notebook: a contour, a cut, and a registration line. */
+:root {
+  --draw-ease: cubic-bezier(0.17, 0.76, 0.22, 1);
+  --settle-ease: cubic-bezier(0.19, 0.86, 0.32, 1.08);
+}
+.field-trace,
+.nav-route-seam {
+  pointer-events: none;
+}
+.field-trace {
+  display: none;
+}
+
+/* ── Hero shimmer overlay — base (always positioned) ── */
+.hero-shimmer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+.graft-register {
+  display: flex;
+  width: 4.5rem;
+  gap: 3px;
+  height: 2px;
+  margin: 0 0 1rem;
+}
+.graft-register i {
+  flex: 1;
+  background: #b8c6af;
+  transform-origin: left;
+}
+.graft-register [data-current="true"] {
+  background: var(--orange);
+}
+.graft-register [data-passed="true"] {
+  background: var(--green);
+}
+.corridor-trace {
+  pointer-events: none;
+}
+
+/* Images and text remain visible without these layers. All motion is opt-in. */
+@media (prefers-reduced-motion: no-preference) {
+  /* ── Hero shimmer sweep — golden morning light across the orchard ── */
+  .hero-shimmer::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      108deg,
+      transparent 25%,
+      rgba(255, 230, 150, 0.14) 44%,
+      rgba(255, 245, 190, 0.26) 50%,
+      rgba(255, 230, 150, 0.14) 56%,
+      transparent 73%
+    );
+    animation: hero-light-sweep 2.4s cubic-bezier(0.4, 0, 0.2, 1) 0.7s both;
+  }
+  /* ── Hero image gentle zoom-out on load ── */
+  .hero-landscape img {
+    animation: hero-zoom-out 7s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  }
+  /* ── Valley image slow drift reveal (above fold, plays on load) ── */
+  .valley-reveal img {
+    animation: valley-drift 10s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  }
+  /* ── Far zoom: triggered when parent Reveal enters viewport ── */
+  .img-far-zoom {
+    transform: scale(1.14) translateY(10px);
+  }
+  [data-reveal="in"] .img-far-zoom {
+    animation: img-far-zoom 1.8s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
+  }
+  /* ── Orchard grower: slides in from right when Reveal fires ── */
+  .img-slide-reveal {
+    transform: translateX(28px) scale(1.06);
+  }
+  [data-reveal="in"] .img-slide-reveal {
+    animation: img-slide-reveal 1.2s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
+  }
+  /* ── Pampore valley: slow upward pan when Reveal fires ── */
+  .img-pan-up {
+    transform: translateY(28px) scale(1.09);
+  }
+  [data-reveal="in"] .img-pan-up {
+    animation: img-pan-up 1.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.1s both;
+  }
+  /* ── Legacy sunset: infinite slow breathing zoom (plays on load, always visible) ── */
+  .img-breathe {
+    animation: img-breathe 12s ease-in-out 0.5s infinite alternate both;
+  }
+  .field-trace {
+    display: block;
+    position: absolute;
+    z-index: 1;
+  }
+  .trace-orchard {
+    inset: 0;
+    overflow: hidden;
+    color: rgba(255, 253, 231, 0.66);
+  }
+  .trace-orchard svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .trace-orchard path {
+    vector-effect: non-scaling-stroke;
+    stroke-dasharray: 1;
+    stroke-dashoffset: calc(1 - var(--field-progress, 0));
+  }
+  .trace-orchard path:nth-child(2) {
+    stroke-dashoffset: clamp(0, calc(1.15 - var(--field-progress, 0) * 1.15), 1);
+    opacity: 0.65;
+  }
+  .trace-orchard path:nth-child(3) {
+    stroke-dashoffset: clamp(0, calc(1.32 - var(--field-progress, 0) * 1.32), 1);
+    opacity: 0.45;
+  }
+  .trace-history {
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--green);
+    transform-origin: top;
+    transform: scaleY(var(--field-progress, 0));
+  }
+  .nav-route-seam {
+    position: absolute;
+    bottom: -1px;
+    left: 8%;
+    right: 8%;
+    height: 1px;
+    opacity: 0;
+    background: linear-gradient(90deg, transparent, var(--leaf) 35%, var(--green) 78%, transparent);
+    animation: route-stitch 0.76s var(--draw-ease) both;
+  }
+  .field-nav-link::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 -4px;
+    height: 1px;
+    background: var(--green);
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.28s var(--draw-ease);
+  }
+  .field-nav-link:is(:focus-visible, [aria-current="page"])::after {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+  .graft-register [data-current="true"] {
+    animation: graft-cut 0.42s var(--settle-ease) both;
+  }
+  .chain-reading {
+    animation: none;
+  }
+  .chain-reading > div {
+    animation: register-row 0.42s var(--draw-ease) both;
+  }
+  .chain-reading > div:nth-child(2) {
+    animation-delay: 40ms;
+  }
+  .chain-reading > div:nth-child(3) {
+    animation-delay: 80ms;
+  }
+  [data-reveal="hidden"]:has([data-field-photo]),
+  [data-reveal="in"]:has([data-field-photo]) {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  [data-reveal="in"] [data-field-photo]::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(
+      110deg,
+      transparent 29%,
+      rgba(247, 245, 234, 0.32) 47%,
+      rgba(247, 245, 234, 0.64) 49%,
+      transparent 50%
+    );
+    animation: field-cut 0.84s var(--draw-ease) both;
+  }
+  .variety-print {
+    animation: print-settle 0.78s var(--settle-ease) backwards;
+  }
+  .rootstock-slip {
+    animation: rootstock-fit 0.38s var(--settle-ease) both;
+  }
+  .rootstock-slip::before {
+    content: "";
+    position: absolute;
+    inset: 12px auto 12px 0;
+    width: 2px;
+    border-radius: 2px;
+    background: var(--green);
+    transform-origin: top;
+    animation: graft-cut 0.4s var(--draw-ease);
+  }
+  .rootstock-slip {
+    position: relative;
+  }
+  .corridor-trace {
+    stroke-dasharray: 1;
+    animation: trace-corridor 0.65s var(--draw-ease) both;
+  }
+  .scroll-cue path {
+    stroke-dasharray: 40;
+    animation: trace-cue 0.75s 0.5s var(--draw-ease) backwards;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .field-nav-link:hover::after {
+      transform: scaleX(1);
+      transform-origin: left;
+    }
+    a:hover > .scroll-cue {
+      transform: translateY(2px);
+      transition: transform 0.24s var(--draw-ease);
+    }
+  }
+}
+@media (max-width: 767px) {
+  .trace-history {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav-route-seam {
+    display: none;
+  }
+}
+@keyframes field-cut {
+  from {
+    transform: translateX(-85%);
+  }
+  to {
+    transform: translateX(110%);
+  }
+}
+@keyframes graft-cut {
+  from {
+    transform: scale(0.1, 1);
+  }
+  to {
+    transform: scale(1, 1);
+  }
+}
+@keyframes register-row {
+  from {
+    clip-path: inset(0 0 8% 0);
+    translate: 0 3px;
+  }
+  to {
+    clip-path: inset(0);
+    translate: none;
+  }
+}
+@keyframes route-stitch {
+  0% {
+    opacity: 0;
+    clip-path: inset(0 100% 0 0);
+  }
+  38% {
+    opacity: 0.88;
+  }
+  75% {
+    clip-path: inset(0);
+    opacity: 0.65;
+  }
+  100% {
+    clip-path: inset(0 0 0 100%);
+    opacity: 0;
+  }
+}
+@keyframes print-settle {
+  from {
+    translate: 0 12px;
+    rotate: -3deg;
+  }
+  to {
+    translate: none;
+    rotate: 0deg;
+  }
+}
+@keyframes rootstock-fit {
+  from {
+    clip-path: inset(0 0 0 12px);
+    translate: -4px 0;
+  }
+  to {
+    clip-path: inset(0);
+    translate: none;
+  }
+}
+@keyframes trace-corridor {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes trace-cue {
+  from {
+    stroke-dashoffset: 40;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.hero-frame .hero-caption {
+  z-index: 2;
+}
+@media (prefers-reduced-motion: no-preference) {
+  /* The accented phrase pivots up from its baseline as the first phrase clears the mask. */
+  .word-rise.accent-leaf {
+    transform-origin: 0 100%;
+    animation-name: field-turn;
+  }
+  @supports (animation-timeline: view()) {
+    .season-window {
+      transform-origin: 0 50%;
+      animation: season-length linear both;
+      animation-timeline: view(block);
+      animation-range: entry 0% entry 100%;
+    }
+  }
+}
+@keyframes field-turn {
+  from {
+    transform: translateY(104%) rotate(3.5deg);
+  }
+  70% {
+    transform: translateY(-1%) rotate(-0.25deg);
+  }
+  to {
+    transform: none;
+  }
+}
+@keyframes season-length {
+  from {
+    transform: scaleX(0.12);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+@keyframes hero-light-sweep {
+  from {
+    transform: translateX(-130%);
+  }
+  to {
+    transform: translateX(140%);
+  }
+}
+/* 1. Hero — gentle zoom out (Ken Burns pullback) */
+@keyframes hero-zoom-out {
+  from {
+    transform: scale(1.07);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+/* 2. Valley — far zoom: starts very zoomed out, pulls into place */
+@keyframes img-far-zoom {
+  from {
+    transform: scale(1.14) translateY(10px);
+  }
+  to {
+    transform: scale(1) translateY(0);
+  }
+}
+/* 3. Orchard-grower — slides in from right */
+@keyframes img-slide-reveal {
+  from {
+    transform: translateX(28px) scale(1.06);
+    opacity: 0.4;
+  }
+  to {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+}
+/* 4. Pampore valley — slow upward pan */
+@keyframes img-pan-up {
+  from {
+    transform: translateY(28px) scale(1.09);
+  }
+  to {
+    transform: translateY(0) scale(1);
+  }
+}
+/* 5. Legacy sunset — slow breathing zoom in */
+@keyframes img-breathe {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.04);
+  }
+  100% {
+    transform: scale(1.02);
+  }
+}
+/* 6. Valley drift (Query section wide container) */
+@keyframes valley-drift {
+  from {
+    transform: scale(1.05) translateY(6px);
+  }
+  to {
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* ── Arrow nudge — subtle back-and-forth on Explore Platform button ── */
+@keyframes arrow-nudge {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(3px);
+  }
+}
+
+.btn-arrow-nudge {
+  display: inline-block;
+  animation: arrow-nudge 1.8s ease-in-out infinite;
+}

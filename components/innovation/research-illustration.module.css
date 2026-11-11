@@ -1,0 +1,207 @@
+.artwork {
+  pointer-events: none;
+  width: 100%;
+  max-width: 480px;
+  margin-inline: auto;
+}
+.artwork svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+/* Build the instrument in ink, bring it into focus, then reveal the specimen.
+   Slower easing lets the sequence settle naturally without a perpetual loop. */
+.blueprint {
+  animation: research-connection 1400ms ease both;
+}
+.microscope :is(path, rect, circle, ellipse):not(.focusBeam):not(.focusLight),
+.apple > path:not(.ink) {
+  stroke-dasharray: 1;
+  animation: research-draw 2600ms cubic-bezier(0.45, 0, 0.15, 1) both;
+}
+.microscope .optics :is(path, rect) {
+  animation-delay: 400ms;
+}
+.microscope .focusDial :is(path, circle) {
+  animation-delay: 600ms;
+}
+.apple > path:not(.ink) {
+  animation-delay: 1100ms;
+}
+.optics {
+  animation: research-focus 2400ms 1500ms cubic-bezier(0.45, 0, 0.2, 1) both;
+}
+.focusDial {
+  transform-origin: 291px 251px;
+  animation: research-dial 2400ms 1500ms cubic-bezier(0.45, 0, 0.2, 1) both;
+}
+.focusBeam {
+  opacity: 0;
+  transform-origin: 216px 257px;
+  animation: research-beam 2700ms 2200ms ease-in-out both;
+}
+.focusLight {
+  animation: research-light 2700ms 2200ms ease-in-out both;
+}
+.specimenScan {
+  opacity: 0;
+  animation: research-scan 2400ms 3300ms cubic-bezier(0.45, 0, 0.25, 1) both;
+}
+.lensFrame {
+  stroke-dasharray: 1;
+  animation: research-draw 1800ms 3000ms cubic-bezier(0.45, 0, 0.15, 1) both;
+}
+.ink {
+  stroke-dasharray: 1;
+  animation: research-ink 1600ms 3700ms cubic-bezier(0.65, 0, 0.35, 1) both;
+}
+.connector {
+  animation: research-connection 1800ms 4300ms ease both;
+}
+.cells {
+  animation: research-cells 1800ms 4600ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform-origin: 398px 205px;
+}
+.nucleus {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: research-nucleus 1000ms 5000ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.nucleus:nth-of-type(2) {
+  animation-delay: 5200ms;
+}
+.nucleus:nth-of-type(3) {
+  animation-delay: 5400ms;
+}
+@keyframes research-draw {
+  0% {
+    stroke-dashoffset: 1;
+    fill-opacity: 0;
+  }
+  60% {
+    stroke-dashoffset: 0;
+    fill-opacity: 0;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    fill-opacity: 1;
+  }
+}
+@keyframes research-focus {
+  0% {
+    transform: translateY(-9px);
+  }
+  60% {
+    transform: translateY(2px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+@keyframes research-dial {
+  0% {
+    transform: rotate(-36deg);
+  }
+  65% {
+    transform: rotate(20deg);
+  }
+  100% {
+    transform: rotate(10deg);
+  }
+}
+@keyframes research-beam {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scaleX(0.6);
+  }
+  25%,
+  65% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+@keyframes research-light {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  40% {
+    opacity: 1;
+    stroke-dashoffset: -6;
+  }
+}
+@keyframes research-scan {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  12%,
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(112px);
+  }
+}
+@keyframes research-ink {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes research-connection {
+  from {
+    opacity: 0;
+    stroke-dashoffset: 14;
+  }
+  to {
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes research-cells {
+  from {
+    opacity: 0;
+    transform: scale(0.86) rotate(-7deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(0);
+  }
+}
+@keyframes research-nucleus {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  55% {
+    opacity: 1;
+    transform: scale(1.55);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lensFrame,
+  .blueprint,
+  .microscope :is(path, rect, circle, ellipse),
+  .apple > path,
+  .optics,
+  .focusDial,
+  .focusBeam,
+  .focusLight,
+  .specimenScan,
+  .ink,
+  .connector,
+  .cells,
+  .nucleus {
+    animation: none !important;
+  }
+}

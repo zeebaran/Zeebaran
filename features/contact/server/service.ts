@@ -30,10 +30,12 @@ export async function limit(req: Request, action: string) {
         : null;
   if (!isLocal() && (!address || !isIP(address)))
     throw new EnquiryError(503, "The enquiry desk is unavailable. Please use email.");
-  const key = createHash("sha256").update([slot, action, address].join("|")).digest("hex");
+  const keyForWindow = (window: number) =>
+    createHash("sha256").update([window, action, address].join("|")).digest("hex");
+  const key = keyForWindow(slot);
   const until = (slot + 1) * windowMs;
   if (isLocal()) (await import("./local")).limitLocal(key, until);
-  else await (await import("./firebase")).limitCloud(key, until);
+  else await (await import("./firebase")).limitCloud(keyForWindow);
 }
 export async function prepare(id: string, size: number) {
   const ticket = randomUUID();

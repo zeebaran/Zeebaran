@@ -1,8 +1,9 @@
 "use client";
+import { ContentMailLink } from "@/features/cms/Content";
 import { Suspense, useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useSearchParams } from "next/navigation";
 import { useForm, useWatch, type FieldErrors, type Resolver } from "react-hook-form";
-import { ArrowRight, Check, FilePlus2, LoaderCircle, X } from "lucide-react";
+import { ArrowRight, FilePlus2, LoaderCircle, X } from "lucide-react";
 import { directory } from "./directory";
 import {
   channels,
@@ -15,6 +16,9 @@ import {
   type Submission,
 } from "./schema";
 import { SITE } from "@/lib/site";
+import { ContentText, useContentPage, useContentStrings } from "@/features/cms/Content";
+import { textKey } from "@/features/cms/model";
+import { sendWeb3Forms, web3formsEnabled } from "./web3forms";
 
 const subscribe = () => () => {};
 const clientReady = () => true;
@@ -23,6 +27,8 @@ const defaults: FormFields = {
   name: "",
   organisation: "",
   email: "",
+  phone: "",
+  place: "",
   reason: "general",
   message: "",
   topic: null,
@@ -77,9 +83,11 @@ async function postJson<T>(path: string, data: unknown): Promise<T> {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   });
-  const body = await response.json();
+  const body = await response.json().catch(() => null);
   if (!response.ok)
-    throw new DeliveryError(response.status, body.error || "Delivery failed. Please try again.");
+    throw new DeliveryError(response.status, body?.error || "Delivery failed. Please try again.");
+  if (!body || typeof body !== "object")
+    throw new Error("The desk returned an unreadable response. Please retry.");
   return body as T;
 }
 async function upload(file: File, id: string) {
@@ -112,6 +120,14 @@ async function upload(file: File, id: string) {
   return { name: file.name, size: file.size, ticket };
 }
 export function ContactForm({ simple = false }: { simple?: boolean }) {
+  const copy = useContentStrings(),
+    contentPage = useContentPage(),
+    useWeb3Forms = web3formsEnabled();
+  const marker = (value: string) => ({
+    "data-cms-field": textKey(value),
+    "data-cms-default": value,
+    "data-cms-page": contentPage,
+  });
   const {
     register,
     handleSubmit,
@@ -124,10 +140,13 @@ export function ContactForm({ simple = false }: { simple?: boolean }) {
   const hydrated = useSyncExternalStore(subscribe, clientReady, serverReady);
   const routedReason = useRef<FormFields["reason"]>("general");
   const topic = useWatch({ control, name: "topic" });
+  const selectedChannel = useWatch({ control, name: "channel" });
+  const selectedReason = useWatch({ control, name: "reason" });
   const [file, setFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [confirmationHeight, setConfirmationHeight] = useState(0);
   const [workingFile, setWorkingFile] = useState(false);
   const selection = useRef(0);
 
@@ -135,6 +154,7 @@ export function ContactForm({ simple = false }: { simple?: boolean }) {
     null,
   );
   const fileInput = useRef<HTMLInputElement>(null);
+  const form = useRef<HTMLFormElement>(null);
   const successHeading = useRef<HTMLHeadingElement>(null);
   const selectReason = useCallback(
     (reason: FormFields["reason"]) => {
@@ -181,6 +201,14 @@ export function ContactForm({ simple = false }: { simple?: boolean }) {
       attempt.current = { key, id: crypto.randomUUID(), attachment: null };
     const current = attempt.current;
     try {
+      if (useWeb3Forms) {
+        await sendWeb3Forms(values, website, current.id);
+        setConfirmationHeight(form.current?.getBoundingClientRect().height || 0);
+        reset({ ...defaults, reason: routedReason.current });
+        attempt.current = null;
+        setSuccess("Your message has been sent to the Zeebaran team.");
+        return;
+      }
       if (file && !current.attachment) current.attachment = await upload(file, current.id);
       const result = await postJson<{ delivery: "local" | "desk" }>("/api/enquiries", {
         ...values,
@@ -188,6 +216,9 @@ export function ContactForm({ simple = false }: { simple?: boolean }) {
         attachment: current.attachment,
         website,
       });
+      if (result.delivery !== "local" && result.delivery !== "desk")
+        throw new Error("The desk did not confirm delivery. Please retry using the same message.");
+      setConfirmationHeight(form.current?.getBoundingClientRect().height || 0);
       setSuccess(
         result.delivery === "local"
           ? "Your enquiry was saved in this project’s local inbox."
@@ -220,7 +251,15 @@ export function ContactForm({ simple = false }: { simple?: boolean }) {
       ) +
       "&body=" +
       encodeURIComponent(
-        [values.name, values.organisation, values.email, "", values.message]
+        [
+          "Name: " + values.name,
+          values.organisation && "Organisation: " + values.organisation,
+          "Email: " + values.email,
+          "Contact number: " + values.phone,
+          "Place: " + values.place,
+          "",
+          values.message,
+        ]
           .filter(Boolean)
           .join("\n"),
       )
@@ -232,12 +271,25 @@ export function ContactForm({ simple = false }: { simple?: boolean }) {
         <RouteReason select={selectReason} prefill={prefill} />
       </Suspense>
       {success ? (
-        <div className="enquiry-success" role="status">
-          <Check size={24} />
+        <div
+          className="enquiry-success"
+          role="status"
+          style={{ minHeight: confirmationHeight || undefined }}
+        >
+          <div className="enquiry-receipt-mark" aria-hidden="true">
+            <svg viewBox="0 0 100 100" fill="none">
+              <circle className="receipt-orbit" cx="50" cy="50" r="44" pathLength="1" />
+              <circle className="receipt-disc" cx="50" cy="50" r="34" />
+              <path className="receipt-check" d="m35 50 10 10 21-22" pathLength="1" />
+            </svg>
+          </div>
+          <span className="enquiry-receipt-label">
+            {useWeb3Forms ? "Message sent" : "Enquiry received"}
+          </span>
           <h3 tabIndex={-1} ref={successHeading}>
-            Thank you.
+            Thank <em>you.</em>
           </h3>
-          <p>{success}</p>
+          <p className="enquiry-receipt-copy">{success}</p>
           <button
             className="action secondary"
             type="button"
@@ -252,15 +304,16 @@ export function ContactForm({ simple = false }: { simple?: boolean }) {
               reset({ ...defaults, reason: routedReason.current });
             }}
           >
-            Write another enquiry
+            Write another enquiry <ArrowRight size={15} aria-hidden="true" />
           </button>
         </div>
       ) : (
         <form
+          ref={form}
           method="post"
           action="/api/enquiries"
           onSubmit={(event) => {
-            if (!hydrated || fileError || workingFile) {
+            if (!hydrated || isSubmitting || fileError || workingFile) {
               event.preventDefault();
               return;
             }
@@ -272,17 +325,24 @@ export function ContactForm({ simple = false }: { simple?: boolean }) {
         >
           <noscript>
             To send an enquiry without JavaScript,{" "}
-            <a href={"mailto:" + SITE.email}>email the Zeebaran team</a>.
+            <ContentMailLink href={"mailto:" + SITE.email}>email the Zeebaran team</ContentMailLink>
+            .
           </noscript>
           <fieldset disabled={!hydrated || isSubmitting} className="form-fields">
             {!simple && (
               <>
                 <div className="desk-heading">
-                  <span className="eyebrow">Institutional desk</span>
-                  <h3>Secure Inquiry Console</h3>
+                  <span className="eyebrow">
+                    <ContentText>Institutional desk</ContentText>
+                  </span>
+                  <h3>
+                    <ContentText>Secure Inquiry Console</ContentText>
+                  </h3>
                 </div>
                 <fieldset className="focus-topics">
-                  <legend>Primary focus</legend>
+                  <legend>
+                    <ContentText>Primary focus</ContentText>
+                  </legend>
                   <div>
                     {topics.map((t) => (
                       <button
@@ -291,7 +351,7 @@ export function ContactForm({ simple = false }: { simple?: boolean }) {
                         aria-pressed={topic === t}
                         onClick={() => setValue("topic", topic === t ? null : t)}
                       >
-                        {t}
+                        <ContentText>{t}</ContentText>
                       </button>
                     ))}
                   </div>
@@ -300,13 +360,14 @@ export function ContactForm({ simple = false }: { simple?: boolean }) {
             )}
             <div className="field-pair">
               <label htmlFor="full-name">
-                Name
+                <ContentText>Name</ContentText>
                 <input
                   id="full-name"
                   autoComplete="name"
                   required
                   maxLength={100}
-                  placeholder="Your name"
+                  placeholder={copy("Your name")}
+                  {...marker("Your name")}
                   aria-invalid={!!errors.name}
                   aria-describedby={errors.name ? "name-error" : undefined}
                   {...register("name")}
@@ -314,26 +375,31 @@ export function ContactForm({ simple = false }: { simple?: boolean }) {
                 {errorHint("name")}
               </label>
               <label htmlFor="organisation">
-                Organisation <small>(optional)</small>
+                <ContentText>Organisation</ContentText>{" "}
+                <small>
+                  <ContentText>(optional)</ContentText>
+                </small>
                 <input
                   id="organisation"
                   autoComplete="organization"
                   maxLength={160}
-                  placeholder="Institution or company"
+                  placeholder={copy("Institution or company")}
+                  {...marker("Institution or company")}
                   {...register("organisation")}
                 />
               </label>
             </div>
             <div className={simple ? "" : "field-pair"}>
               <label htmlFor="email">
-                Email
+                <ContentText>Email</ContentText>
                 <input
                   id="email"
                   type="email"
                   autoComplete="email"
                   required
                   maxLength={254}
-                  placeholder="you@organisation.org"
+                  placeholder={copy("you@organisation.org")}
+                  {...marker("you@organisation.org")}
                   aria-invalid={!!errors.email}
                   aria-describedby={errors.email ? "email-error" : undefined}
                   {...register("email")}
@@ -342,35 +408,80 @@ export function ContactForm({ simple = false }: { simple?: boolean }) {
               </label>
               {!simple && (
                 <label htmlFor="channel">
-                  Preferred channel
-                  <select id="channel" {...register("channel")}>
+                  <ContentText>Preferred channel</ContentText>
+                  <select
+                    id="channel"
+                    {...register("channel")}
+                    {...marker(channels[selectedChannel])}
+                  >
                     {Object.entries(channels).map(([k, v]) => (
-                      <option value={k} key={k}>
-                        {v}
+                      <option value={k} key={k} {...marker(v)}>
+                        {copy(v)}
                       </option>
                     ))}
                   </select>
                 </label>
               )}
             </div>
+            <div className="field-pair">
+              <label htmlFor="phone">
+                <ContentText>Contact number</ContentText>
+                <input
+                  id="phone"
+                  type="tel"
+                  inputMode="tel"
+                  autoComplete="tel"
+                  required
+                  maxLength={30}
+                  placeholder={copy("+91 98765 43210")}
+                  {...marker("+91 98765 43210")}
+                  aria-invalid={!!errors.phone}
+                  aria-describedby={errors.phone ? "phone-error" : undefined}
+                  {...register("phone")}
+                />
+                {errorHint("phone")}
+              </label>
+              <label htmlFor="place">
+                <ContentText>Place</ContentText>
+                <input
+                  id="place"
+                  autoComplete="address-level2"
+                  required
+                  maxLength={160}
+                  placeholder={copy("Town, village or city")}
+                  {...marker("Town, village or city")}
+                  aria-invalid={!!errors.place}
+                  aria-describedby={errors.place ? "place-error" : undefined}
+                  {...register("place")}
+                />
+                {errorHint("place")}
+              </label>
+            </div>
             <label htmlFor="reason">
-              Reason for writing
-              <select id="reason" {...register("reason")}>
+              <ContentText>Reason for writing</ContentText>
+              <select
+                id="reason"
+                {...register("reason")}
+                {...marker(
+                  directory.find((item) => item.id === selectedReason)?.title || "General enquiry",
+                )}
+              >
                 {directory.map((d) => (
-                  <option key={d.id} value={d.id}>
-                    {d.title}
+                  <option key={d.id} value={d.id} {...marker(d.title)}>
+                    {copy(d.title)}
                   </option>
                 ))}
               </select>
             </label>
             <label htmlFor="message">
-              What are you working on?
+              <ContentText>What are you working on?</ContentText>
               <textarea
                 id="message"
                 rows={5}
                 required
                 maxLength={5000}
-                placeholder="Tell us about your work or question…"
+                placeholder={copy("Tell us about your work or question…")}
+                {...marker("Tell us about your work or question…")}
                 aria-invalid={!!errors.message}
                 aria-describedby={errors.message ? "message-error" : undefined}
                 {...register("message")}
@@ -381,10 +492,13 @@ export function ContactForm({ simple = false }: { simple?: boolean }) {
               <label htmlFor="website">Website</label>
               <input id="website" name="website" autoComplete="off" tabIndex={-1} />
             </div>
-            {!simple && (
+            {!simple && !useWeb3Forms && (
               <div className="attachment-field">
                 <span>
-                  Attachment or proposal <small>(optional)</small>
+                  <ContentText>Attachment or proposal</ContentText>{" "}
+                  <small>
+                    <ContentText>(optional)</ContentText>
+                  </small>
                 </span>
                 <input
                   id="proposal"
@@ -397,11 +511,13 @@ export function ContactForm({ simple = false }: { simple?: boolean }) {
                 <label className="upload-target" htmlFor="proposal">
                   <FilePlus2 size={18} />
                   <span>
-                    {file ? file.name : "Select a PDF"}
+                    {file ? file.name : <ContentText>Select a PDF</ContentText>}
                     <small>
-                      {file
-                        ? "Change attachment"
-                        : "Proposal, deck or research brief · up to 25 MB"}
+                      {file ? (
+                        "Change attachment"
+                      ) : (
+                        <ContentText>Proposal, deck or research brief · up to 25 MB</ContentText>
+                      )}
                     </small>
                   </span>
                 </label>
@@ -423,21 +539,26 @@ export function ContactForm({ simple = false }: { simple?: boolean }) {
             )}
             {error && (
               <div className="delivery-error" role="alert">
-                {error} <a href={emailLink()}>Open email draft</a>
+                {error} <ContentMailLink href={emailLink()}>Open email draft</ContentMailLink>
                 {file && <small>Attach the PDF in your email app.</small>}
               </div>
             )}
             <button
               className="action primary send-enquiry"
               type="submit"
+              aria-busy={isSubmitting}
               disabled={!hydrated || isSubmitting || workingFile || !!fileError}
             >
-              {isSubmitting ? "Sending…" : "Send message"}{" "}
-              {isSubmitting ? (
-                <LoaderCircle className="loader" size={15} />
-              ) : (
-                <ArrowRight size={15} />
-              )}
+              <span className="send-enquiry-label">
+                {isSubmitting ? "Sending…" : <ContentText>Send message</ContentText>}
+              </span>
+              <span className="send-enquiry-icon" aria-hidden="true">
+                {isSubmitting ? (
+                  <LoaderCircle className="loader" size={17} />
+                ) : (
+                  <ArrowRight size={17} />
+                )}
+              </span>
             </button>
           </fieldset>
         </form>

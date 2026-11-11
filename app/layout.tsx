@@ -1,9 +1,12 @@
+import { socialImage } from "@/features/media/social";
+import { PageContent } from "@/features/cms/server/public";
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import localFont from "next/font/local";
 import "./globals.css";
-import { Nav } from "@/components/Nav";
-import { Footer } from "@/components/Footer";
+import "./catalog.css";
+import "./field-motion.css";
+import { SiteFrame } from "@/components/SiteFrame";
 import { Providers } from "@/components/Motion";
 import { SITE } from "@/lib/site";
 import { env, SITE_URL } from "@/lib/env";
@@ -32,8 +35,8 @@ export const metadata: Metadata = {
   description: SITE.description,
   applicationName: SITE.name,
   icons: { icon: "/brand/favicon-32.png", apple: "/brand/apple-touch-icon.png" },
-  openGraph: { siteName: SITE.name, type: "website", locale: "en" },
-  twitter: { card: "summary_large_image" },
+  openGraph: { siteName: SITE.name, type: "website", locale: "en", images: [socialImage] },
+  twitter: { card: "summary_large_image", images: [socialImage.url] },
   robots: { index: true, follow: true },
 };
 
@@ -69,7 +72,7 @@ const jsonLd = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const ga = env.NEXT_PUBLIC_GA_ID;
   return (
-    <html lang="en" className={`${sans.variable} ${serif.variable}`}>
+    <html data-scroll-behavior="smooth" lang="en" className={`${sans.variable} ${serif.variable}`}>
       <body>
         <a
           href="#main"
@@ -78,11 +81,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           Skip to content
         </a>
         <Providers>
-          <Nav />
-          <main id="main" tabIndex={-1}>
-            {children}
-          </main>
-          <Footer />
+          <PageContent page="site">
+            <SiteFrame>{children}</SiteFrame>
+          </PageContent>
         </Providers>
         <script
           type="application/ld+json"

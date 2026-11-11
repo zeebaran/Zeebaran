@@ -1,3 +1,5 @@
+// Historical authored content: used only by the one-time Firestore migration and legacy tests.
+// Runtime catalog pages must never import this data.
 export type Rootstock = {
   code: string;
   system: string;

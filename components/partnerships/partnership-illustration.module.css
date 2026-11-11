@@ -1,0 +1,64 @@
+/* A shared landscape, supporting hands, and a sapling drawn in one calm sequence. */
+.sketch {
+  --drawing-ease: cubic-bezier(0.45, 0, 0.2, 1);
+}
+.sketch :is(path, circle) {
+  stroke-dasharray: 1;
+  animation: partnership-ink 1900ms var(--drawing-ease) both;
+}
+.sketch .mountains {
+  animation-duration: 2400ms;
+}
+.sketch .snow {
+  animation-delay: 650ms;
+}
+.sketch .foothills {
+  animation-delay: 1000ms;
+}
+.sketch .hands {
+  animation-delay: 1300ms;
+  animation-duration: 2200ms;
+}
+.sketch .cuffs {
+  animation-delay: 1600ms;
+}
+.sketch .creases {
+  animation-delay: 2100ms;
+}
+.sketch .soil {
+  animation-delay: 2000ms;
+}
+.sketch .stem {
+  animation-delay: 2600ms;
+}
+.sketch .leaves {
+  animation-delay: 3200ms;
+  animation-duration: 2200ms;
+}
+.sketch .veins {
+  animation-delay: 3800ms;
+}
+.sketch .apple {
+  animation-delay: 4100ms;
+}
+.sketch .ground {
+  animation-delay: 4400ms;
+}
+@keyframes partnership-ink {
+  from {
+    opacity: 0;
+    stroke-dashoffset: 1;
+  }
+  10% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sketch :is(path, circle) {
+    animation: none !important;
+  }
+}

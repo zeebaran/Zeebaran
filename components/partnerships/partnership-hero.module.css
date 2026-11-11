@@ -1,0 +1,31 @@
+.layout {
+  position: relative;
+}
+.illustration {
+  width: 100%;
+  max-width: 260px;
+  margin: 24px auto 0;
+  pointer-events: none;
+}
+.illustration svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+@media (min-width: 1280px) {
+  .illustration {
+    position: absolute;
+    top: calc(42% - 92px);
+    right: -172px;
+    width: 260px;
+    max-width: none;
+    margin: 0;
+  }
+}
+@media (min-width: 1440px) {
+  .illustration {
+    top: calc(42% - 106px);
+    width: 300px;
+    right: -212px;
+  }
+}

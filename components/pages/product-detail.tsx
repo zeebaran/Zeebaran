@@ -1,28 +1,36 @@
+import { ContentText } from "@/features/cms/Content";
 import { NurseryEnquiry } from "./NurseryEnquiry";
 import { Heading, Reveal, Stagger, Item } from "@/components/Motion";
 import { Eyebrow } from "@/components/ui";
 import { Photo } from "@/components/Photo";
-import { PRODUCTS, type Product } from "@/lib/products-content";
-import type { SceneVariant } from "@/components/Scene";
-import Link from "next/link";
+import type { Product } from "@/features/catalog/model";
+import { CompareButton } from "@/features/catalog/ComparisonProvider";
+import { CatalogGallery } from "@/features/catalog/PublicSections";
+import { ContentLink as Link } from "@/features/cms/Content";
 import { ArrowLeft } from "lucide-react";
 
 /* ─── Metric tile ──────────────────────────────────────────────────────────── */
 function MetricTile({ label, value }: { label: string; value: string }) {
   return (
     <div className="card p-4 text-center">
-      <span className="block font-serif text-[1.5rem] font-semibold leading-none tracking-tight text-green">
-        {value}
+      <span className="block font-serif text-[1.25rem] font-semibold leading-tight tracking-tight text-green">
+        <ContentText>{value}</ContentText>
       </span>
-      <span className="mt-1.5 block text-[0.6875rem] uppercase tracking-wider text-muted">
-        {label}
+      <span className="mt-1.5 block text-[0.625rem] uppercase tracking-wider text-muted">
+        <ContentText>{label}</ContentText>
       </span>
     </div>
   );
 }
 
 /* ─── Detail Page ──────────────────────────────────────────────────────────── */
-export function ProductDetailPage({ product }: { product: Product }) {
+export function ProductDetailPage({
+  product,
+  related = [],
+}: {
+  product: Product;
+  related?: Product[];
+}) {
   return (
     <>
       {/* ── HERO ───────────────────────────────────────────────── */}
@@ -42,31 +50,38 @@ export function ProductDetailPage({ product }: { product: Product }) {
           <div className="grid gap-10 lg:grid-cols-[1fr_420px] lg:gap-16">
             {/* left: headline */}
             <div>
-              <div className="hero-rise mb-5 flex flex-wrap items-center gap-2">
+              <div className="hero-rise mb-5 flex flex-wrap items-center gap-2 [&>.eyebrow]:text-[0.625rem]">
                 <Eyebrow>{product.eyebrow}</Eyebrow>
-                {product.badge && (
-                  <span className="rounded-full bg-orange/15 px-2.5 py-1 text-[0.6rem] font-bold uppercase tracking-widest text-[#a34404]">
-                    {product.badge}
-                  </span>
-                )}
+                <ContentText>
+                  {product.badge && (
+                    <span className="rounded-full bg-orange/15 px-2.5 py-1 text-[0.6rem] font-bold uppercase tracking-widest text-[#a34404]">
+                      <ContentText>{product.badge}</ContentText>
+                    </span>
+                  )}
+                </ContentText>
               </div>
               <Heading
                 as="h1"
                 immediate
                 delay={0.1}
                 text={product.headline}
-                className="text-display max-w-[16ch]"
+                className="max-w-[18ch] text-[clamp(2rem,1.3rem+2.6vw,3.5rem)] leading-[1.08] tracking-[-0.025em]"
               />
               <div
-                className="hero-rise mt-6 max-w-2xl space-y-3 text-lead text-muted"
+                className="hero-rise mt-5 max-w-2xl space-y-3 text-[0.9375rem] leading-[1.7] text-muted sm:text-[1.0625rem]"
                 style={{ "--d": "0.35s" } as React.CSSProperties}
               >
-                <p>{product.intro}</p>
+                <p>
+                  <ContentText>{product.intro.replace(/\s*—\s*/g, " ")}</ContentText>
+                </p>
               </div>
 
+              <div className="mt-5 [&>button]:text-[0.6875rem]">
+                <CompareButton item={{ id: product.id, name: product.name, kind: product.kind }} />
+              </div>
               {/* quick metric grid */}
               <Reveal delay={0.4} className="mt-8">
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <div className="grid grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] gap-3 sm:grid-cols-[minmax(0,0.8fr)_minmax(0,0.8fr)_minmax(0,1fr)_minmax(11rem,1.5fr)]">
                   <MetricTile label="Origin" value={product.origin.split(" ")[0]} />
                   <MetricTile label="Season" value={product.season} />
                   <MetricTile label="Sugar (°Bx)" value={product.brix} />
@@ -80,9 +95,7 @@ export function ProductDetailPage({ product }: { product: Product }) {
               <div className="relative overflow-hidden rounded-[1.25rem] shadow-lift lg:rounded-[1.5rem]">
                 <Photo
                   src={product.image}
-                  alt={product.name + " apples"}
-                  variant={(product.sceneVariant as SceneVariant) ?? "orchard"}
-                  seed={product.sceneSeed ?? 3}
+                  alt={product.images[0]?.alt || product.name}
                   className="aspect-[4/3] lg:aspect-[3/4]"
                   sizes="(min-width:1024px) 420px, 100vw"
                   priority
@@ -101,7 +114,9 @@ export function ProductDetailPage({ product }: { product: Product }) {
             <div>
               {/* key-value spec table */}
               <Reveal>
-                <h2 className="text-h3 font-semibold text-forest">Variety Profile</h2>
+                <h2 className="text-h3 font-semibold text-forest">
+                  <ContentText>Variety Profile</ContentText>
+                </h2>
               </Reveal>
               <Reveal delay={0.05}>
                 <dl className="mt-5 border-b border-line">
@@ -116,10 +131,15 @@ export function ProductDetailPage({ product }: { product: Product }) {
                     ["Ambient Shelf Life", product.shelfLife],
                     ["CA Storage Life", product.storageLife],
                     ["Market Class", product.marketClass],
+                    ...product.specifications.map((s) => [s.label, s.value]),
                   ].map(([k, v]) => (
                     <div key={k} className="kv">
-                      <dt>{k}</dt>
-                      <dd>{v}</dd>
+                      <dt>
+                        <ContentText>{k}</ContentText>
+                      </dt>
+                      <dd>
+                        <ContentText>{v}</ContentText>
+                      </dd>
                     </div>
                   ))}
                 </dl>
@@ -127,12 +147,14 @@ export function ProductDetailPage({ product }: { product: Product }) {
 
               {/* highlights */}
               <Reveal delay={0.1} className="mt-10">
-                <h2 className="text-h3 font-semibold text-forest">Why Growers Choose It</h2>
+                <h2 className="text-h3 font-semibold text-forest">
+                  <ContentText>Why Growers Choose It</ContentText>
+                </h2>
                 <ul className="mt-5 space-y-3">
                   {product.highlights.map((h) => (
                     <li key={h} className="flex gap-3 text-body text-forest/85">
                       <span className="mt-2 size-1.5 shrink-0 rounded-full bg-green" />
-                      {h}
+                      <ContentText>{h}</ContentText>
                     </li>
                   ))}
                 </ul>
@@ -140,8 +162,12 @@ export function ProductDetailPage({ product }: { product: Product }) {
 
               {/* agronomy */}
               <Reveal delay={0.15} className="mt-10">
-                <h2 className="text-h3 font-semibold text-forest">Agronomy Notes</h2>
-                <p className="mt-4 text-body leading-relaxed text-muted">{product.agronomyNotes}</p>
+                <h2 className="text-h3 font-semibold text-forest">
+                  <ContentText>Agronomy Notes</ContentText>
+                </h2>
+                <p className="mt-4 text-body leading-relaxed text-muted">
+                  <ContentText>{product.agronomyNotes}</ContentText>
+                </p>
               </Reveal>
             </div>
 
@@ -152,7 +178,10 @@ export function ProductDetailPage({ product }: { product: Product }) {
               {/* rootstock detail cards */}
               <div className="mt-6">
                 <h3 className="mb-4 text-[0.875rem] font-semibold text-forest">
-                  Rootstock options for {product.name}
+                  <ContentText>
+                    Rootstock options for <ContentText></ContentText>
+                    {product.name}
+                  </ContentText>
                 </h3>
                 <Stagger className="space-y-3">
                   {product.rootstocks.map((r) => (
@@ -160,22 +189,30 @@ export function ProductDetailPage({ product }: { product: Product }) {
                       <div className="rounded-xl border border-line bg-white p-4">
                         <div className="flex items-start justify-between gap-2">
                           <div>
-                            <span className="micro block">{r.system}</span>
+                            <span className="micro block">
+                              <ContentText>{r.system}</ContentText>
+                            </span>
                             <span className="mt-0.5 block text-[0.875rem] font-semibold text-forest">
-                              {r.code}
+                              <ContentText>{r.code}</ContentText>
                             </span>
                           </div>
                           <span className="shrink-0 rounded-full bg-leaf/15 px-2 py-0.5 text-[0.625rem] font-semibold uppercase tracking-wider text-green">
-                            {r.yield}
+                            <ContentText>{r.yield}</ContentText>
                           </span>
                         </div>
                         <dl className="mt-2 space-y-0.5 text-[0.75rem] text-muted">
                           <div className="flex gap-2">
-                            <dt className="shrink-0 font-medium text-forest/70">Spacing:</dt>
-                            <dd>{r.spacing}</dd>
+                            <dt className="shrink-0 font-medium text-forest/70">
+                              <ContentText>Spacing:</ContentText>
+                            </dt>
+                            <dd>
+                              <ContentText>{r.spacing}</ContentText>
+                            </dd>
                           </div>
                         </dl>
-                        <p className="mt-2 text-[0.75rem] leading-relaxed text-muted">{r.note}</p>
+                        <p className="mt-2 text-[0.75rem] leading-relaxed text-muted">
+                          <ContentText>{r.note}</ContentText>
+                        </p>
                       </div>
                     </Item>
                   ))}
@@ -185,14 +222,17 @@ export function ProductDetailPage({ product }: { product: Product }) {
               {/* contact fallback */}
               <div className="mt-5 rounded-xl border border-line bg-cream/80 p-4 text-center">
                 <p className="text-[0.75rem] text-muted">
-                  Prefer a detailed conversation?{" "}
+                  <ContentText>
+                    Prefer a detailed conversation?<ContentText></ContentText>{" "}
+                  </ContentText>
                   <Link
                     href="/contact"
                     className="font-semibold text-green underline underline-offset-2"
                   >
                     Use our inquiry form
-                  </Link>{" "}
-                  for a written response from our horticultural team.
+                  </Link>
+                  <ContentText> </ContentText>
+                  <ContentText>for a written response from our horticultural team.</ContentText>
                 </p>
               </div>
             </div>
@@ -201,14 +241,24 @@ export function ProductDetailPage({ product }: { product: Product }) {
       </section>
 
       {/* ── RELATED VARIETIES ──────────────────────────────────── */}
-      <RelatedVarieties current={product.slug} season={product.season} />
+      <CatalogGallery item={product} />
+      <RelatedVarieties current={product.slug} season={product.season} products={related} />
     </>
   );
 }
 
 /* ─── Related Varieties strip ──────────────────────────────────────────────── */
-function RelatedVarieties({ current, season }: { current: string; season: Product["season"] }) {
-  const related = PRODUCTS.filter((p) => p.slug !== current)
+function RelatedVarieties({
+  current,
+  season,
+  products,
+}: {
+  current: string;
+  season: Product["season"];
+  products: Product[];
+}) {
+  const related = products
+    .filter((p) => p.slug !== current)
     .sort((a, b) => Number(b.season === season) - Number(a.season === season))
     .slice(0, 3);
 
@@ -220,6 +270,7 @@ function RelatedVarieties({ current, season }: { current: string; season: Produc
           {related.map((p) => (
             <Item key={p.slug}>
               <Link
+                prefetch={false}
                 href={`/products/${p.slug}`}
                 className="card card-hover group flex flex-col overflow-hidden"
               >
@@ -227,18 +278,20 @@ function RelatedVarieties({ current, season }: { current: string; season: Produc
                   <Photo
                     src={p.image}
                     alt={p.name + " apples"}
-                    variant={(p.sceneVariant as SceneVariant) ?? "orchard"}
-                    seed={p.sceneSeed ?? 3}
                     className="absolute inset-0 transition-transform duration-500 "
                     sizes="(min-width:1024px) 30vw, 100vw"
                   />
                 </div>
                 <div className="p-4">
-                  <span className="micro block">{p.origin}</span>
-                  <span className="mt-1 block font-semibold text-forest group-hover:text-green">
-                    {p.name}
+                  <span className="micro block">
+                    <ContentText>{p.origin}</ContentText>
                   </span>
-                  <span className="mt-1 block text-[0.75rem] text-muted">{p.seasonMonths}</span>
+                  <span className="mt-1 block font-semibold text-forest group-hover:text-green">
+                    <ContentText>{p.name}</ContentText>
+                  </span>
+                  <span className="mt-1 block text-[0.75rem] text-muted">
+                    <ContentText>{p.seasonMonths}</ContentText>
+                  </span>
                 </div>
               </Link>
             </Item>
@@ -262,17 +315,21 @@ function SectionHead({
 }) {
   return (
     <div className={`max-w-[44rem] ${className}`}>
-      {eyebrow && (
-        <Reveal y={8}>
-          <Eyebrow>{eyebrow}</Eyebrow>
-        </Reveal>
-      )}
+      <ContentText>
+        {eyebrow && (
+          <Reveal y={8}>
+            <Eyebrow>{eyebrow}</Eyebrow>
+          </Reveal>
+        )}
+      </ContentText>
       <Heading text={title} className="mt-5 text-h2" />
-      {children && (
-        <Reveal delay={0.15} className="mt-5 space-y-4 text-body text-muted">
-          {children}
-        </Reveal>
-      )}
+      <ContentText>
+        {children && (
+          <Reveal delay={0.15} className="mt-5 space-y-4 text-body text-muted">
+            {children}
+          </Reveal>
+        )}
+      </ContentText>
     </div>
   );
 }

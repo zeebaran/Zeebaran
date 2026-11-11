@@ -1,38 +1,28 @@
 import "server-only";
-import { applicationDefault, cert, getApps, initializeApp } from "firebase-admin/app";
-import { FieldValue, getFirestore, Timestamp } from "firebase-admin/firestore";
+import { consumeRateLimit, RateLimitReached } from "@/lib/server/rate-limits";
+import { scheduleRateLimitCleanup } from "@/lib/server/rate-limit-maintenance";
+import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
 import { EnquiryError } from "./errors";
 import { validatePdf, scanCloudPdf, scannerUrl } from "./pdf";
 import { type Submission } from "../schema";
-function firebase() {
-  const projectId = process.env.FIREBASE_PROJECT_ID;
-  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-  const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n");
-  return (
-    getApps().find((app) => app.name === "zeebaran") ||
-    initializeApp(
-      {
-        projectId,
-        storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
-        credential:
-          clientEmail && privateKey
-            ? cert({ projectId, clientEmail, privateKey })
-            : applicationDefault(),
-      },
-      "zeebaran",
-    )
-  );
-}
-export async function limitCloud(key: string, until: number) {
+import { firebase } from "@/lib/firebase-admin";
+export async function limitCloud(keyForWindow: (window: number) => string) {
   const database = getFirestore(firebase());
-  const doc = database.collection("enquiryRateLimits").doc(key);
-  await database.runTransaction(async (tx) => {
-    const previous = Number((await tx.get(doc)).get("count") || 0);
-    if (previous >= 12)
+  try {
+    await consumeRateLimit(database, {
+      collection: "enquiryRateLimits",
+      windowMs: 15 * 60 * 1000,
+      keyForWindow,
+      max: 12,
+    });
+  } catch (error) {
+    if (error instanceof RateLimitReached)
       throw new EnquiryError(429, "Too many requests. Please try again in 15 minutes.");
-    tx.set(doc, { count: previous + 1, expiresAt: Timestamp.fromMillis(until) });
-  });
+    throw error;
+  } finally {
+    await scheduleRateLimitCleanup(database);
+  }
 }
 function bucket() {
   if (!process.env.FIREBASE_STORAGE_BUCKET)

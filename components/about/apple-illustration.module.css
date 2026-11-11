@@ -1,0 +1,290 @@
+/* One synchronized cycle: slice, reveal, rest, close, then a quiet pause. */
+.sketch {
+  --slice-ease: cubic-bezier(0.65, 0, 0.25, 1);
+}
+.leftHalf,
+.rightHalf {
+  transform-origin: 188px 180px;
+}
+.leftHalf {
+  animation: apple-open-leftHalf 14s var(--slice-ease) infinite both;
+}
+.rightHalf {
+  animation: apple-open-rightHalf 14s var(--slice-ease) infinite both;
+}
+.cutFace {
+  opacity: 0;
+  animation: apple-cut-face 14s var(--slice-ease) infinite both;
+}
+.knife {
+  opacity: 0;
+  animation: apple-knife 14s var(--slice-ease) infinite both;
+}
+.seam {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: apple-seam 14s var(--slice-ease) infinite both;
+}
+.wordmark {
+  opacity: 0;
+  transform-origin: 188px 175px;
+  animation: apple-wordmark 14s var(--slice-ease) infinite both;
+}
+.lettering {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 26px;
+  font-style: italic;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+.wordWipe {
+  transform-origin: 164px 82px;
+  animation: apple-signature-wipe 14s var(--slice-ease) infinite both;
+}
+@keyframes apple-knife {
+  0%,
+  2% {
+    opacity: 0;
+    transform: translate(176px, -92px) rotate(-90deg);
+  }
+  8% {
+    opacity: 1;
+    transform: translate(176px, 10px) rotate(-90deg);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(176px, 185px) rotate(-90deg);
+  }
+  23% {
+    opacity: 1;
+    transform: translate(176px, 205px) rotate(-90deg);
+  }
+  32%,
+  100% {
+    opacity: 0;
+    transform: translate(233px, 240px) rotate(-65deg);
+  }
+}
+@keyframes apple-seam {
+  0%,
+  12% {
+    stroke-dashoffset: 1;
+    opacity: 0;
+  }
+  14% {
+    opacity: 0.8;
+  }
+  22% {
+    stroke-dashoffset: 0;
+    opacity: 0.8;
+  }
+  24%,
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+@keyframes apple-open-leftHalf {
+  0%,
+  24%,
+  80%,
+  100% {
+    transform: translateX(0) rotate(0);
+  }
+  38%,
+  62% {
+    transform: translateX(-28px) rotate(-2deg);
+  }
+}
+@keyframes apple-open-rightHalf {
+  0%,
+  24%,
+  80%,
+  100% {
+    transform: translateX(0) rotate(0);
+  }
+  38%,
+  62% {
+    transform: translateX(30px) rotate(2deg);
+  }
+}
+@keyframes apple-cut-face {
+  0%,
+  22%,
+  80%,
+  100% {
+    opacity: 0;
+  }
+  28%,
+  72% {
+    opacity: 0.7;
+  }
+}
+@keyframes apple-wordmark {
+  0%,
+  31%,
+  100% {
+    opacity: 0;
+    transform: translateY(9px) scale(0.94);
+  }
+  44%,
+  61% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  68%,
+  85% {
+    opacity: 0;
+    transform: translateY(3px) scale(0.98);
+  }
+}
+@keyframes apple-signature-wipe {
+  0%,
+  32%,
+  70%,
+  100% {
+    transform: scaleY(0);
+  }
+  44%,
+  69% {
+    transform: scaleY(1);
+  }
+}
+
+/* The same 14-second beat alternates direction over a complete 28-second loop.
+   Both scenes meet on the identical closed apple, so direction changes never jump. */
+.verticalScene {
+  animation: apple-vertical-phase 28s steps(1, end) infinite both;
+}
+.horizontalScene {
+  opacity: 0;
+  animation: apple-horizontal-phase 28s steps(1, end) infinite both;
+}
+.topHalf,
+.bottomHalf {
+  transform-origin: 188px 168px;
+}
+.topHalf {
+  animation: apple-open-top 14s var(--slice-ease) infinite both;
+}
+.bottomHalf {
+  animation: apple-open-bottom 14s var(--slice-ease) infinite both;
+}
+.horizontalKnife {
+  opacity: 0;
+  animation: apple-horizontal-knife 14s var(--slice-ease) infinite both;
+}
+.horizontalLettering {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 34px;
+  font-style: italic;
+  font-weight: 600;
+  letter-spacing: -1.3px;
+}
+.horizontalWipe {
+  transform-origin: 105px 145px;
+  animation: apple-horizontal-wipe 14s var(--slice-ease) infinite both;
+}
+@keyframes apple-vertical-phase {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+@keyframes apple-horizontal-phase {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes apple-open-top {
+  0%,
+  24%,
+  80%,
+  100% {
+    transform: translateY(0) rotate(0);
+  }
+  38%,
+  62% {
+    transform: translateY(-30px) rotate(-3deg);
+  }
+}
+@keyframes apple-open-bottom {
+  0%,
+  24%,
+  80%,
+  100% {
+    transform: translateY(0) rotate(0);
+  }
+  38%,
+  62% {
+    transform: translateY(33px) rotate(3deg);
+  }
+}
+@keyframes apple-horizontal-knife {
+  0%,
+  2% {
+    opacity: 0;
+    transform: translate(350px, 115px) rotate(-12deg);
+  }
+  8% {
+    opacity: 1;
+    transform: translate(275px, 144px) rotate(-3deg);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(103px, 147px) rotate(0);
+  }
+  23% {
+    opacity: 1;
+    transform: translate(87px, 141px) rotate(2deg);
+  }
+  32%,
+  100% {
+    opacity: 0;
+    transform: translate(38px, 97px) rotate(-12deg);
+  }
+}
+@keyframes apple-horizontal-wipe {
+  0%,
+  32%,
+  70%,
+  100% {
+    transform: scaleX(0);
+  }
+  44%,
+  69% {
+    transform: scaleX(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sketch * {
+    animation: none !important;
+  }
+  .leftHalf {
+    transform: translateX(-28px) rotate(-2deg);
+  }
+  .rightHalf {
+    transform: translateX(30px) rotate(2deg);
+  }
+  .cutFace {
+    opacity: 0.7;
+  }
+  .wordmark {
+    opacity: 1;
+    transform: none;
+  }
+  .wordWipe {
+    transform: none;
+  }
+  .seam,
+  .knife {
+    display: none;
+  }
+}

@@ -1,0 +1,131 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "catalogEntries",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "kind",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "deleted",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "nameSort",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "catalogEntries",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "deleted",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "rootstockRefs",
+          "arrayConfig": "CONTAINS"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "catalogPublished",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "kind",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "sortOrder",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "catalogPublished",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "kind",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "nameSort",
+          "order": "ASCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": [
+    {
+      "collectionGroup": "catalogEntries",
+      "fieldPath": "draft",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "catalogEntries",
+      "fieldPath": "updatedAt",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "catalogEntries",
+      "fieldPath": "createdAt",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "catalogPublished",
+      "fieldPath": "intro",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "catalogPublished",
+      "fieldPath": "agronomyNotes",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "catalogPublished",
+      "fieldPath": "note",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "catalogPublished",
+      "fieldPath": "highlights",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "catalogPublished",
+      "fieldPath": "images",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "catalogPublished",
+      "fieldPath": "specifications",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "catalogPublished",
+      "fieldPath": "rootstockIds",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "catalogAudit",
+      "fieldPath": "*",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "cmsRateLimits",
+      "fieldPath": "expiresAt",
+      "indexes": [
+        {
+          "order": "ASCENDING",
+          "queryScope": "COLLECTION"
+        }
+      ]
+    }
+  ]
+}

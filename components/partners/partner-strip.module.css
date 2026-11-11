@@ -1,0 +1,152 @@
+.viewport {
+  container-type: inline-size;
+  overflow: hidden;
+  width: 100%;
+  padding-block: 8px;
+}
+.viewport:focus-visible {
+  outline: 2px solid #06642d;
+  outline-offset: 4px;
+  border-radius: 8px;
+}
+.track {
+  display: flex;
+  width: max-content;
+  animation: partner-travel var(--partner-duration, 33s) linear infinite;
+}
+.group {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 24px;
+  flex-shrink: 0;
+  min-width: 100cqw;
+  margin: 0;
+  padding: 0 12px;
+  list-style: none;
+}
+.group li {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 160px;
+  min-height: 52px;
+}
+.mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  color: #123b25;
+  max-width: 154px;
+}
+.wordmark {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  font-family: var(--font-sans), sans-serif;
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+.wordmark small {
+  margin-top: 5px;
+  font-family: var(--font-sans), sans-serif;
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #123b25b3;
+}
+.mark[data-font="serif"] .wordmark,
+.mark[data-font="serif-italic"] .wordmark {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 23px;
+  font-weight: 500;
+}
+.mark[data-font="serif-italic"] .wordmark,
+.mark[data-font="sans-italic"] .wordmark {
+  font-style: italic;
+}
+.mark[data-preset="civ"] .wordmark {
+  color: #06642d;
+  font-size: 24px;
+  letter-spacing: -0.04em;
+}
+.mark[data-preset="fruit-control"] .wordmark {
+  font-size: 10px;
+  max-width: 65px;
+  text-align: left;
+}
+.mark[data-preset="fiedlin"] .wordmark {
+  font-size: 16px;
+  letter-spacing: 0.12em;
+}
+.mark[data-preset="gripple"] .wordmark {
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  color: #123b25cc;
+}
+.mark[data-preset="incofin"] .wordmark {
+  font-size: 14px;
+  letter-spacing: -0.02em;
+}
+.fruitSeal {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 2px solid #123b25;
+  border-radius: 50%;
+  font:
+    700 10px var(--font-sans),
+    sans-serif;
+}
+.fieldMark {
+  width: 16px;
+  height: 24px;
+  border-top-right-radius: 8px;
+  background: linear-gradient(45deg, #fe6901, #8cc63f);
+}
+.financeMark {
+  width: 24px;
+  height: 24px;
+  border: 6px solid #d0ddc5;
+  border-radius: 50%;
+  background: #06642d;
+}
+.logo {
+  width: 144px;
+  height: 44px;
+  object-fit: contain;
+}
+.viewport:hover .track,
+.viewport:focus-within .track {
+  animation-play-state: paused;
+}
+@keyframes partner-travel {
+  to {
+    transform: translateX(-50%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .track {
+    animation: none;
+    width: 100%;
+  }
+  .group {
+    min-width: 0;
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 0;
+  }
+  .group[aria-hidden="true"],
+  .group li[aria-hidden="true"] {
+    display: none;
+  }
+}

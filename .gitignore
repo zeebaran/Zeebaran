@@ -12,3 +12,11 @@ next-env.d.ts
 .DS_Store
 *.zip
 
+
+firebase-debug*.log
+
+.next-admin/
+
+.next-audit/
+
+.next-perf/

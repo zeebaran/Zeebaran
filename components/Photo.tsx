@@ -1,5 +1,7 @@
-import Image from "next/image";
-import { Scene, type SceneVariant } from "./Scene";
+import { ContentText } from "@/features/cms/Content";
+import { ContentImage as Image } from "@/features/cms/Content";
+import type { SceneVariant } from "./Scene";
+import { ImagePlaceholder } from "@/features/media/ImagePlaceholder";
 
 type Props = {
   src?: string;
@@ -11,32 +13,33 @@ type Props = {
   sizes?: string;
 };
 
-/** Real photo when `src` is given, otherwise brand-palette placeholder artwork. */
+/** Authored photograph, with a quiet reusable icon when no photograph is available. */
 export function Photo({
   src,
   alt = "",
-  variant = "rows",
-  seed = 7,
   className = "",
   priority,
   sizes = "(min-width:1024px) 40vw, 100vw",
 }: Props) {
   return (
     <div
+      data-field-photo={src && !className.includes("absolute") ? "" : undefined}
       className={`${className.includes("absolute") ? "" : "relative"} isolate overflow-hidden bg-forest ${className}`}
     >
-      {src ? (
-        <Image
-          src={src}
-          alt={alt}
-          fill
-          sizes={sizes}
-          priority={priority}
-          className="object-cover"
-        />
-      ) : (
-        <Scene variant={variant} seed={seed} />
-      )}
+      <ContentText>
+        {src ? (
+          <Image
+            src={src}
+            alt={alt}
+            fill
+            sizes={sizes}
+            priority={priority}
+            className="object-cover"
+          />
+        ) : (
+          <ImagePlaceholder fill alt={alt} />
+        )}
+      </ContentText>
     </div>
   );
 }

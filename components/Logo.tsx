@@ -1,4 +1,5 @@
-import Link from "next/link";
+import { ContentText } from "@/features/cms/Content";
+import { ContentLink as Link } from "@/features/cms/Content";
 
 /** Italic serif wordmark, as in the approved Home design. The plant mark is kept for favicon/OG use. */
 export function Logo({ light = false, dot = false }: { light?: boolean; dot?: boolean }) {
@@ -9,7 +10,7 @@ export function Logo({ light = false, dot = false }: { light?: boolean; dot?: bo
           light ? "!text-[1.875rem] font-bold text-white" : "text-forest group-hover:text-green"
         }`}
       >
-        zeebaran
+        <ContentText>zeebaran</ContentText>
       </span>
       {dot && <span className="size-2.5 rounded-full bg-leaf" aria-hidden />}
     </Link>

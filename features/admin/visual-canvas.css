@@ -1,0 +1,34 @@
+.visual-canvas-public {
+  min-height: 100dvh;
+}
+.visual-canvas-public .cms-preview-banner {
+  display: none;
+}
+.visual-canvas-highlight {
+  position: fixed;
+  pointer-events: none;
+  z-index: 10000;
+  border: 2px solid #fe6901;
+  border-radius: 6px;
+  box-shadow: 0 0 0 3px rgb(254 105 1 / 0.12);
+}
+.visual-canvas-highlight > span {
+  position: absolute;
+  bottom: calc(100% + 5px);
+  left: -2px;
+  padding: 4px 9px;
+  white-space: nowrap;
+  border-radius: 5px;
+  background: #123b25;
+  color: #fff;
+  font:
+    500 11px/1.4 var(--font-sans),
+    sans-serif;
+}
+
+/* Retained previews do not animate while another editing tab is open. */
+.visual-canvas-public[data-editor-active="false"] *,
+.visual-canvas-public[data-editor-active="false"] *::before,
+.visual-canvas-public[data-editor-active="false"] *::after {
+  animation-play-state: paused !important;
+}

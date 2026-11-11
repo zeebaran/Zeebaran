@@ -1,0 +1,25 @@
+.hero {
+  position: relative;
+}
+.illustration {
+  width: 100%;
+  max-width: 300px;
+  margin: 24px auto 0;
+  pointer-events: none;
+}
+.illustration svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+@media (min-width: 1280px) {
+  .illustration {
+    position: absolute;
+    top: 50%;
+    right: 16px;
+    width: 400px;
+    max-width: none;
+    margin: 0;
+    transform: translateY(-45%);
+  }
+}

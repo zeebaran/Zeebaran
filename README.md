@@ -13,7 +13,7 @@ npm ci
 npm run dev
 ```
 
-Open the local URL printed by Next.js. Development enquiries and their PDFs are saved privately under `.local/enquiries.sqlite`. The confirmation identifies local delivery. To inspect the inbox on this Mac, run this command.
+Open the local URL printed by Next.js. When Web3Forms and Firebase are both unconfigured, development enquiries and their PDFs are saved privately under `.local/enquiries.sqlite`. The confirmation identifies local delivery. To inspect that local inbox on this Mac, run this command.
 
 ```sh
 sqlite3 .local/enquiries.sqlite 'select id, created from enquiries order by created desc;'
@@ -44,6 +44,12 @@ The masked headlines and staggered reveals use the reference timing. Stat counte
 
 The optional `NEXT_PUBLIC_WHATSAPP_NUMBER` accepts a verified international nursery number at build time. Without one, variety and rootstock selections open the enquiry form with the message filled in.
 
+## Contact email delivery
+
+Set `NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY` before building to deliver both contact forms through Web3Forms Free. The access key identifies the receiving mailbox and is public by design. Configured submissions go directly from the browser to Web3Forms, with no Firebase enquiry reads/writes. The existing design and inline validation/success states are retained; PDFs are sent separately by email because attachments require a paid provider plan. See [Web3Forms setup and verification](docs/web3forms.md).
+
+Without this key, the existing local/Firebase enquiry backend remains available. To run legacy local-inbox browser tests, explicitly build with `NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY=` so a configured live form cannot send test messages.
+
 ## Firebase and analytics
 
 Copy `.env.example` to `.env.local` for local overrides. Set production variables in the deployment environment.
@@ -59,7 +65,7 @@ Copy `.env.example` to `.env.local` for local overrides. Set production variable
 
 Create the Firestore database and Storage bucket in a dedicated Firebase project. Apply the included Firestore and Storage rules to that project. They limit direct client access. The server identity needs Firestore write access, object read/write access to the bucket, and the ability to sign upload policies.
 
-Set the bucket CORS policy to allow the site origin to POST. The browser uploads PDFs directly under `pending/` using a ten-minute signed policy restricted to the object name, MIME type and declared byte count. The server checks the PDF signature and copies the exact object generation into `received/` before recording it. Set a one-day lifecycle expiration on `pending/` and enable Firestore TTL on `enquiryRateLimits.expiresAt`. [Cloud Storage CORS](https://cloud.google.com/storage/docs/cross-origin) · [Firestore TTL](https://firebase.google.com/docs/firestore/ttl)
+Set the bucket CORS policy to allow the site origin to POST. The browser uploads PDFs directly under `pending/` using a ten-minute signed policy restricted to the object name, MIME type and declared byte count. The server checks the PDF signature and copies the exact object generation into `received/` before recording it. This optional PDF workflow depends on Cloud Storage, which requires Blaze; it is not a Spark deployment prerequisite. Do not enable it on the Spark project. Firestore rate limits use logical expiry and bounded application cleanup, with managed TTL disabled; see [Spark maintenance](docs/spark-firestore.md). [Cloud Storage CORS](https://cloud.google.com/storage/docs/cross-origin)
 
 Enquiries are stored in the `enquiries` collection with reason, preferred reply channel, creation time and attachment details. Staff can review them in Firestore and retrieve the private object from Storage. Retrying the same submission reuses its ID. An unavailable service leaves the visitor’s form intact and provides an email-draft link.
 
@@ -89,4 +95,8 @@ Live proposals require a private HTTPS malware scanner configured with `PDF_SCAN
 
 Cloud receipts reserve the request ID before copying a scanned file. Retrying the same request can complete a receiving record. Alert on receiving records older than 15 minutes and on delivery failures or elevated 429s. For an interrupted copy with an existing received object, run `node scripts/desk.mjs recover <UUID>` to verify and rescan it before promotion. If the object does not exist, investigate pending storage and retry the original submission. Keep correlation references, never name, email, proposal contents or tokens in application logs.
 
-Before public intake, verify canonical origin, ingress identity, staff IAM, scanner, signed upload, CORS and retrieval in staging. Exercise concurrent retries, a rejected file, scanner outage, and recipient access. Configure Firestore backups and bucket recovery, restore a test record and attachment to an isolated project, then verify checksums. Set an owner-approved retention period covering records, received objects, backups and scanner logs; remove both record and file at expiry. Have the content owner verify published audit, certification and performance claims against their actual records.
+Before public intake, verify canonical origin, ingress identity, staff IAM, scanner, signed upload, CORS and retrieval in staging. Exercise concurrent retries, a rejected file, scanner outage, and recipient access. Managed Firestore backups and Cloud Storage recovery depend on billing; do not enable them on Spark. For a future owner-approved paid deployment, restore a test record and attachment to an isolated project and verify checksums. Set an owner-approved retention period covering records, received objects, backups and scanner logs; remove both record and file at expiry. Have the content owner verify published audit, certification and performance claims against their actual records.
+
+## Editorial administration
+
+The protected `/admin` desk provides per-page text, image and film editing, authenticated draft previews, confirmed publication, revision history and a shared Cloudinary media library. It uses verified Firebase sign-in and server-side email authorization. See [admin setup](docs/admin-setup.md) for live configuration, security boundaries and disposable emulator checks. Live provider connections require the credentials described there; passing local checks does not establish live connectivity.

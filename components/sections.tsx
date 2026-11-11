@@ -1,3 +1,4 @@
+import { ContentText } from "@/features/cms/Content";
 import { Eyebrow, Button } from "./ui";
 import { Heading, Reveal, Stagger, Item } from "./Motion";
 import { Photo } from "./Photo";
@@ -29,19 +30,23 @@ export function PageHero({
           text={title}
           className="mt-6 max-w-[16ch] text-display sm:max-w-[18ch] lg:max-w-[20ch]"
         />
-        {children && (
-          <div
-            className="hero-rise mt-7 max-w-[38rem] space-y-4 text-lead text-muted"
-            style={delay(0.35)}
-          >
-            {children}
-          </div>
-        )}
-        {actions && (
-          <div className="hero-rise mt-9 flex flex-wrap gap-3" style={delay(0.5)}>
-            {actions}
-          </div>
-        )}
+        <ContentText>
+          {children && (
+            <div
+              className="hero-rise mt-7 max-w-[38rem] space-y-4 text-lead text-muted"
+              style={delay(0.35)}
+            >
+              <ContentText>{children}</ContentText>
+            </div>
+          )}
+        </ContentText>
+        <ContentText>
+          {actions && (
+            <div className="hero-rise mt-9 flex flex-wrap gap-3" style={delay(0.5)}>
+              <ContentText>{actions}</ContentText>
+            </div>
+          )}
+        </ContentText>
       </div>
     </section>
   );
@@ -60,17 +65,21 @@ export function SectionHead({
 }) {
   return (
     <div className={`max-w-[44rem] ${className}`}>
-      {eyebrow && (
-        <Reveal y={8}>
-          <Eyebrow>{eyebrow}</Eyebrow>
-        </Reveal>
-      )}
+      <ContentText>
+        {eyebrow && (
+          <Reveal y={8}>
+            <Eyebrow>{eyebrow}</Eyebrow>
+          </Reveal>
+        )}
+      </ContentText>
       <Heading text={title} className="mt-5 text-h2" />
-      {children && (
-        <Reveal delay={0.15} className="mt-5 space-y-4 text-body text-muted">
-          {children}
-        </Reveal>
-      )}
+      <ContentText>
+        {children && (
+          <Reveal delay={0.15} className="mt-5 space-y-4 text-body text-muted">
+            {children}
+          </Reveal>
+        )}
+      </ContentText>
     </div>
   );
 }
@@ -107,7 +116,9 @@ export function FeatureRow({
       </Reveal>
       <div className={flip ? "md:order-1" : ""}>
         <Reveal y={8}>
-          <span className="micro">{eyebrow}</span>
+          <span className="micro">
+            <ContentText>{eyebrow}</ContentText>
+          </span>
         </Reveal>
         <Heading
           as="h3"
@@ -115,20 +126,28 @@ export function FeatureRow({
           className="mt-3 text-[clamp(1.75rem,1.3rem+1.4vw,2.5rem)] leading-[1.1] tracking-[-0.02em]"
         />
         <Reveal delay={0.1}>
-          <p className="mt-4 max-w-[34rem] text-body">{body}</p>
+          <p className="mt-4 max-w-[34rem] text-body">
+            <ContentText>{body}</ContentText>
+          </p>
         </Reveal>
-        {rows && (
-          <Reveal delay={0.2}>
-            <dl className="mt-6 border-b border-line">
-              {rows.map(([k, v]) => (
-                <div key={k} className="kv">
-                  <dt>{k}</dt>
-                  <dd>{v}</dd>
-                </div>
-              ))}
-            </dl>
-          </Reveal>
-        )}
+        <ContentText>
+          {rows && (
+            <Reveal delay={0.2}>
+              <dl className="mt-6 border-b border-line">
+                {rows.map(([k, v]) => (
+                  <div key={k} className="kv">
+                    <dt>
+                      <ContentText>{k}</ContentText>
+                    </dt>
+                    <dd>
+                      <ContentText>{v}</ContentText>
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </Reveal>
+          )}
+        </ContentText>
       </div>
     </div>
   );
@@ -155,21 +174,39 @@ export function CardGrid({
         <Item key={it.title}>
           <article className="card card-hover flex h-full flex-col p-6">
             <div className="flex items-start justify-between">
-              {it.n && <span className="micro">{it.n}</span>}
-              {it.tag && (
-                <span className="rounded-full bg-leaf/20 px-2.5 py-1 text-[0.625rem] font-semibold uppercase tracking-wider text-green">
-                  {it.tag}
-                </span>
-              )}
+              <ContentText>
+                {it.n && (
+                  <span className="micro">
+                    <ContentText>{it.n}</ContentText>
+                  </span>
+                )}
+              </ContentText>
+              <ContentText>
+                {it.tag && (
+                  <span className="rounded-full bg-leaf/20 px-2.5 py-1 text-[0.625rem] font-semibold uppercase tracking-wider text-green">
+                    <ContentText>{it.tag}</ContentText>
+                  </span>
+                )}
+              </ContentText>
             </div>
             <h3 className="mt-4 text-[1.0625rem] font-semibold leading-snug tracking-tight">
-              {it.title}
+              <ContentText>{it.title}</ContentText>
             </h3>
-            <p className="mt-2 text-small">{it.body}</p>
+            <p className="mt-2 text-small">
+              <ContentText>{it.body}</ContentText>
+            </p>
             {it.foot && (
               <p className="mt-auto border-t border-line pt-4 text-[0.75rem] leading-snug text-forest/80">
-                {it.footLabel && <span className="micro mr-2">{it.footLabel}</span>}
-                <span className="mt-1 block">{it.foot}</span>
+                <ContentText>
+                  {it.footLabel && (
+                    <span className="micro mr-2">
+                      <ContentText>{it.footLabel}</ContentText>
+                    </span>
+                  )}
+                </ContentText>
+                <span className="mt-1 block">
+                  <ContentText>{it.foot}</ContentText>
+                </span>
               </p>
             )}
           </article>
@@ -205,7 +242,9 @@ export function CtaBand({
         className="text-[clamp(1.9rem,1.4rem+1.8vw,2.75rem)] leading-[1.1] tracking-[-0.02em]"
       />
       <Reveal delay={0.15}>
-        <p className="mx-auto mt-5 max-w-[34rem] text-body">{body}</p>
+        <p className="mx-auto mt-5 max-w-[34rem] text-body">
+          <ContentText>{body}</ContentText>
+        </p>
       </Reveal>
       <Reveal delay={0.25} className="mt-8 flex flex-wrap items-center justify-center gap-3">
         <Button href={primary.href}>{primary.label}</Button>
@@ -232,7 +271,9 @@ export function CtaBand({
     >
       <Photo src={src} variant={variant} seed={11} className="absolute inset-0" />
       <div className="absolute inset-0 bg-forest/35" />
-      <div className="relative px-4 py-16 sm:px-8 sm:py-28">{inner}</div>
+      <div className="relative px-4 py-16 sm:px-8 sm:py-28">
+        <ContentText>{inner}</ContentText>
+      </div>
     </section>
   );
 }
@@ -247,15 +288,23 @@ export function PrincipleGrid({
 }) {
   return (
     <div className={`grid gap-4 sm:grid-cols-2 ${cols}`}>
-      {items.map((p, i) => (
-        <Reveal key={p.t} delay={(i % 3) * 0.08} className="h-full">
-          <article className="card card-hover h-full p-6">
-            <span className="micro">{String(i + 1).padStart(2, "0")}</span>
-            <h3 className="mt-3 text-[1.0625rem] font-semibold">{p.t}</h3>
-            <p className="mt-2 text-small">{p.d}</p>
-          </article>
-        </Reveal>
-      ))}
+      <ContentText>
+        {items.map((p, i) => (
+          <Reveal key={p.t} delay={(i % 3) * 0.08} className="h-full">
+            <article className="card card-hover h-full p-6">
+              <span className="micro">
+                <ContentText>{String(i + 1).padStart(2, "0")}</ContentText>
+              </span>
+              <h3 className="mt-3 text-[1.0625rem] font-semibold">
+                <ContentText>{p.t}</ContentText>
+              </h3>
+              <p className="mt-2 text-small">
+                <ContentText>{p.d}</ContentText>
+              </p>
+            </article>
+          </Reveal>
+        ))}
+      </ContentText>
     </div>
   );
 }

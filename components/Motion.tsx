@@ -1,4 +1,7 @@
 "use client";
+
+import { useContentString, useContentPage } from "@/features/cms/Content";
+import { textKey } from "@/features/cms/model";
 import { animate, LazyMotion, MotionConfig, useInView, useReducedMotion } from "framer-motion";
 import { useEffect, useRef, type CSSProperties, type ReactNode } from "react";
 
@@ -96,7 +99,9 @@ export function Heading({
   tone?: "underline" | "leaf";
 }) {
   const ref = useScrollReveal<HTMLHeadingElement>("data-reveal-words");
-  const words = text
+  const copy = useContentString(text);
+  const contentPage = useContentPage();
+  const words = copy
     .split(/(\{[^}]+\})/g)
     .filter(Boolean)
     .flatMap((p) => {
@@ -110,7 +115,13 @@ export function Heading({
   const accentCls = tone === "leaf" ? "accent-leaf" : "accent";
   let n = 0;
   return (
-    <Tag ref={immediate ? undefined : ref} className={className}>
+    <Tag
+      data-cms-field={textKey(text)}
+      data-cms-default={text}
+      data-cms-page={contentPage}
+      ref={immediate ? undefined : ref}
+      className={className}
+    >
       {words.map(({ w, accent }, k) =>
         /^\s+$/.test(w) ? (
           <span key={k} className={accent ? accentCls : undefined}>
@@ -147,24 +158,36 @@ export function CountUp({
   suffix?: string;
   className?: string;
 }) {
+  const copy = useContentString(String(to));
+  const contentPage = useContentPage();
+  const target = Number.isFinite(Number(copy)) ? Number(copy) : to;
   const ref = useRef<HTMLSpanElement>(null);
   const inView = useInView(ref, { once: true, margin: "0px 0px -10% 0px" });
   const reduce = useReducedMotion();
   useEffect(() => {
     const el = ref.current;
-    if (!inView || reduce || to === 0 || !el) return;
-    const c = animate(0, to, {
+    if (!inView || reduce || target === 0 || !el) return;
+    const c = animate(0, target, {
       duration: 1.6,
       ease,
       onUpdate: (n) => {
-        el.textContent = fmt(Math.round(n), to);
+        el.textContent = fmt(Math.round(n), target);
       },
     });
-    return () => c.stop();
-  }, [inView, reduce, to]);
+    return () => {
+      c.stop();
+      el.textContent = fmt(target, target);
+    };
+  }, [inView, reduce, target]);
   return (
-    <span className={className}>
-      <span ref={ref}>{fmt(to, to)}</span>
+    <span
+      data-cms-field={textKey(String(to))}
+      data-cms-default={String(to)}
+      data-cms-numeric="true"
+      data-cms-page={contentPage}
+      className={className}
+    >
+      <span ref={ref}>{fmt(target, target)}</span>
       {suffix}
     </span>
   );

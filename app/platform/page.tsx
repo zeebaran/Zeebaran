@@ -1,3 +1,4 @@
+import { PageContent } from "@/features/cms/server/public";
 import { SectionHead } from "@/components/sections";
 import { Timeline } from "@/components/Timeline";
 import {
@@ -18,25 +19,27 @@ export const metadata = pageMeta(
 
 export default function Platform() {
   return (
-    <>
-      <PlatformHero />
-      <Journey />
-      <Capabilities />
+    <PageContent page="platform">
+      <>
+        <PlatformHero />
+        <Journey />
+        <Capabilities />
 
-      <section className="panel section">
-        <div className="wrap">
-          <SectionHead
-            eyebrow="How it was built"
-            title="Each capability was built in {response to a constraint.}"
-            className="mb-12"
-          />
-          <Timeline />
-        </div>
-      </section>
+        <section className="panel section">
+          <div className="wrap">
+            <SectionHead
+              eyebrow="How it was built"
+              title="Each capability was built in {response to a constraint.}"
+              className="mb-12"
+            />
+            <Timeline />
+          </div>
+        </section>
 
-      <OrchardYear />
-      <Integration />
-      <PlatformCta />
-    </>
+        <OrchardYear />
+        <Integration />
+        <PlatformCta />
+      </>
+    </PageContent>
   );
 }

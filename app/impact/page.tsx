@@ -1,3 +1,4 @@
+import { PageContent } from "@/features/cms/server/public";
 import {
   ImpactHero,
   FourThings,
@@ -17,14 +18,18 @@ export const metadata = pageMeta(
 
 export default function Impact() {
   return (
-    <>
-      <ImpactHero />
-      <FourThings />
-      <AuditedMetrics />
-      <ProofStandard />
-      <ClaimsContext />
-      <TheTest />
-      <EvidenceCta />
-    </>
+    <PageContent page="impact">
+      {
+        <>
+          <ImpactHero />
+          <FourThings />
+          <AuditedMetrics />
+          <ProofStandard />
+          <ClaimsContext />
+          <TheTest />
+          <EvidenceCta />
+        </>
+      }
+    </PageContent>
   );
 }

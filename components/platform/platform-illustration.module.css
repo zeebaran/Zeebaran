@@ -1,0 +1,100 @@
+/* Original artwork preserved: only its existing pen strokes are choreographed. */
+.sketch {
+  --ink-ease: cubic-bezier(0.45, 0, 0.2, 1);
+}
+.sketch path:not(.connections):not(.connectionTrace) {
+  stroke-dasharray: 1;
+  animation: platform-ink 1900ms var(--ink-ease) both;
+}
+.sketch .ground {
+  animation-delay: 0ms;
+}
+.sketch .trunk {
+  animation-delay: 350ms;
+}
+.sketch .canopy {
+  animation-delay: 650ms;
+}
+.sketch .detail {
+  animation-delay: 1000ms;
+}
+.sketch .fruit {
+  animation-delay: 1300ms;
+}
+.sketch .fruit:nth-of-type(6) {
+  animation-delay: 1550ms;
+}
+.sketch .fruit:nth-of-type(7) {
+  animation-delay: 1800ms;
+}
+.sketch .trellis {
+  animation-delay: 1600ms;
+}
+.sketch .storage {
+  animation-delay: 2200ms;
+}
+.sketch .crate {
+  animation-delay: 2800ms;
+}
+.sketch .harvest {
+  animation: platform-harvest 1700ms 3300ms var(--ink-ease) both;
+}
+.connectionTrace {
+  stroke-dasharray: 1;
+  animation: platform-trace 1900ms 4300ms var(--ink-ease) both;
+}
+.connections {
+  animation: platform-connect 1600ms 4200ms var(--ink-ease) both;
+}
+@keyframes platform-ink {
+  from {
+    opacity: 0;
+    stroke-dashoffset: 1;
+  }
+  12% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes platform-connect {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes platform-harvest {
+  0% {
+    opacity: 0;
+    stroke-dashoffset: 1;
+    transform: translateY(-13px);
+  }
+  25% {
+    opacity: 1;
+  }
+  65% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    opacity: 1;
+    stroke-dashoffset: 0;
+    transform: translateY(0);
+  }
+}
+@keyframes platform-trace {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sketch path {
+    animation: none !important;
+  }
+}

@@ -1,29 +1,29 @@
 import { figures } from "./figures";
 /** Copy for the Home page. Source: approved Stitch design. */
 export const thumbs = [
-  { src: "/images/home/thumb-1.jpg", alt: "Himalayan valley trees", label: "01 · Terrain" },
+  { src: "asset:galleries/home/thumb-1-jpg", alt: "Himalayan valley trees", label: "01 · Terrain" },
   {
-    src: "/images/home/thumb-2.jpg",
+    src: "asset:galleries/home/thumb-2-jpg",
     alt: "Grower tending a high-density apple tree",
     label: "02 · Stewardship",
   },
   {
-    src: "/images/home/thumb-3.jpg",
+    src: "asset:galleries/home/thumb-3-jpg",
     alt: "Agronomists inspecting soil and leaf",
     label: "03 · Agronomy",
   },
   {
-    src: "/images/home/thumb-4.jpg",
+    src: "asset:galleries/home/thumb-4-jpg",
     alt: "Targeted nutrition and irrigation",
     label: "04 · Inputs",
   },
   {
-    src: "/images/home/thumb-5.jpg",
+    src: "asset:galleries/home/thumb-5-jpg",
     alt: "High-grade harvested red apples",
     label: "05 · Grade sorting",
   },
   {
-    src: "/images/home/thumb-6.jpg",
+    src: "asset:galleries/home/thumb-6-jpg",
     alt: "Controlled-atmosphere cold storage chamber",
     label: "06 · CA Storage",
   },

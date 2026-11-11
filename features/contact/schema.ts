@@ -18,6 +18,20 @@ export const formSchema = z.object({
   name: z.string().trim().min(2, "Enter your name.").max(100),
   organisation: z.string().trim().max(160),
   email: z.email({ error: "Enter a valid email address." }).max(254),
+  phone: z
+    .string()
+    .trim()
+    .max(30, "Enter a valid contact number.")
+    .regex(/^\+?[0-9][0-9 ()-]*[0-9]$/, "Enter a valid contact number.")
+    .refine((value) => {
+      const digits = value.replace(/\D/g, "").length;
+      return digits >= 7 && digits <= 15;
+    }, "Enter a contact number with 7–15 digits."),
+  place: z
+    .string()
+    .trim()
+    .min(2, "Enter your town, village or city.")
+    .max(160, "Keep the place under 160 characters."),
   channel: z.enum(["email", "video", "srinagar", "delhi"]),
   reason: z.enum(reasons),
   topic: z.enum(topics).nullable(),

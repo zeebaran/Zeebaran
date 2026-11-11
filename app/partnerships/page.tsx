@@ -1,3 +1,4 @@
+import { PageContent } from "@/features/cms/server/public";
 import {
   PartnershipsHero,
   ResearchPartners,
@@ -17,14 +18,18 @@ export const metadata = pageMeta(
 
 export default function Partnerships() {
   return (
-    <>
-      <PartnershipsHero />
-      <ResearchPartners />
-      <TechCapital />
-      <FieldPartnerships />
-      <HowWeWork />
-      <PartnerWordmarks />
-      <PartnerCta />
-    </>
+    <PageContent page="partnerships">
+      {
+        <>
+          <PartnershipsHero />
+          <ResearchPartners />
+          <TechCapital />
+          <FieldPartnerships />
+          <HowWeWork />
+          <PartnerWordmarks />
+          <PartnerCta />
+        </>
+      }
+    </PageContent>
   );
 }

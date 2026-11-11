@@ -1,8 +1,11 @@
 "use client";
+
+import { ContentText } from "@/features/cms/Content";
+
 import { useRef, useState } from "react";
 import { capabilities } from "@/lib/capabilities";
 import { ArrowUpRight } from "lucide-react";
-import Link from "next/link";
+import { ContentLink as Link } from "@/features/cms/Content";
 
 import { Stagger, Item, Reveal } from "./Motion";
 
@@ -50,12 +53,12 @@ export function CapabilityExplorer() {
                 <span
                   className={
                     "mb-1 block text-[0.6875rem] font-bold " +
-                    (selected === i ? "text-[#a34404]" : "text-forest/75")
+                    (selected === i ? "text-[#fe6901]" : "text-forest/75")
                   }
                 >
-                  {String(i + 1).padStart(2, "0")}
+                  <ContentText>{String(i + 1).padStart(2, "0")}</ContentText>
                 </span>
-                {item.label}
+                <ContentText>{item.label}</ContentText>
               </button>
             </Item>
           ))}
@@ -69,6 +72,13 @@ export function CapabilityExplorer() {
           tabIndex={0}
           className="rounded-2xl border border-green/20 bg-cream/80 p-6 sm:p-10"
         >
+          <div className="graft-register" aria-hidden="true">
+            <ContentText>
+              {capabilities.map((stage, i) => (
+                <i key={stage.id} data-current={i === selected} data-passed={i < selected} />
+              ))}
+            </ContentText>
+          </div>
           <dl key={current.id} className="chain-reading divide-y divide-green/10">
             {[
               ["What Zeebaran operates", current.overview[0]],
@@ -82,12 +92,14 @@ export function CapabilityExplorer() {
                 <dt
                   className={
                     "text-eyebrow font-bold uppercase tracking-[0.16em] " +
-                    (label === "Constraint answered" ? "text-[#a34404]" : "text-green")
+                    (label === "Constraint answered" ? "text-[#fe6901]" : "text-green")
                   }
                 >
-                  {label}
+                  <ContentText>{label}</ContentText>
                 </dt>
-                <dd className="text-small text-forest/90 sm:text-body md:col-span-2">{value}</dd>
+                <dd className="text-small text-forest/90 sm:text-body md:col-span-2">
+                  <ContentText>{value}</ContentText>
+                </dd>
               </div>
             ))}
           </dl>
@@ -96,7 +108,8 @@ export function CapabilityExplorer() {
           className="mt-4 inline-flex items-center gap-1.5 text-small font-semibold text-green underline-offset-4 hover:underline"
           href={"/platform#" + current.id}
         >
-          Explore this capability <ArrowUpRight size={14} />
+          <ContentText>Explore this capability </ContentText>
+          <ArrowUpRight size={14} />
         </Link>
       </Reveal>
     </div>

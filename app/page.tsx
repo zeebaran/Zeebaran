@@ -1,3 +1,4 @@
+import { PageContent } from "@/features/cms/server/public";
 import { Hero, Query } from "@/components/home/Hero";
 import {
   Vision,
@@ -20,17 +21,19 @@ export const metadata = pageMeta(
 
 export default function Home() {
   return (
-    <div className="text-forest">
-      <Hero />
-      <Query />
-      <Vision />
-      <Ability />
-      <System />
-      <Metrics />
-      <Himalayas />
-      <HubPanel />
-      <FinalHarvest />
-      <Legacy />
-    </div>
+    <PageContent page="home">
+      <div className="text-forest">
+        <Hero />
+        <Query />
+        <Vision />
+        <Ability />
+        <System />
+        <Metrics />
+        <Himalayas />
+        <HubPanel />
+        <FinalHarvest />
+        <Legacy />
+      </div>
+    </PageContent>
   );
 }

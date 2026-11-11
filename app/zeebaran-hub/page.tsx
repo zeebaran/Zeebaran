@@ -1,3 +1,4 @@
+import { PageContent } from "@/features/cms/server/public";
 import {
   AaaModel,
   Carries,
@@ -17,14 +18,18 @@ export const metadata = pageMeta(
 
 export default function ZeebaranHub() {
   return (
-    <>
-      <HubHero />
-      <WhyHub />
-      <AaaModel />
-      <VisitSteps />
-      <Carries />
-      <FieldLoop />
-      <HubCta />
-    </>
+    <PageContent page="zeebaran-hub">
+      {
+        <>
+          <HubHero />
+          <WhyHub />
+          <AaaModel />
+          <VisitSteps />
+          <Carries />
+          <FieldLoop />
+          <HubCta />
+        </>
+      }
+    </PageContent>
   );
 }

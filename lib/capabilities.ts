@@ -19,7 +19,7 @@ export const capabilities = [
       "A resilient, uniform, and productive orchard built on an uncompromised biological foundation.",
     ],
     image: {
-      src: "/images/nursery-development-and-hillside-mother-block-orchards-11ecd.webp",
+      src: "asset:orchards/nurseries/nursery-development-and-hillside-mother-block-orchards-11ecd-webp",
       width: 1408,
       height: 768,
       alt: "Nursery Development and hillside mother-block orchards",
@@ -42,7 +42,7 @@ export const capabilities = [
       "Orchards designed for long-term productivity and resilience.",
     ],
     image: {
-      src: "/images/high-density-trellis-orchard-rows-under-hail-df766.webp",
+      src: "asset:orchards/high-density-trellis-orchard-rows-under-hail-df766-webp",
       width: 1408,
       height: 768,
       alt: "High-density trellis orchard rows under hail protection net",
@@ -68,7 +68,7 @@ export const capabilities = [
       "Timely intervention before challenges become losses.",
     ],
     image: {
-      src: "/images/agronomists-and-farmers-inspecting-orchard-branches-c648b.webp",
+      src: "asset:galleries/field-work/agronomists-and-farmers-inspecting-orchard-branches-c648b-webp",
       width: 1408,
       height: 768,
       alt: "Agronomists and farmers inspecting orchard branches",
@@ -97,7 +97,7 @@ export const capabilities = [
       "The right intervention at the right time, with greater efficiency and less waste.",
     ],
     image: {
-      src: "/images/biological-inputs-calibration-equipment-and-spraying-in-ebb40.webp",
+      src: "asset:orchards/biological-inputs-calibration-equipment-and-spraying-in-ebb40-webp",
       width: 1408,
       height: 768,
       alt: "Biological inputs, calibration equipment and spraying in orchard",
@@ -123,7 +123,7 @@ export const capabilities = [
       "Preserved quality, reduced post-harvest losses, and greater flexibility in when to sell.",
     ],
     image: {
-      src: "/images/apple-sorting-optical-grading-and-packaging-line-05f6d.webp",
+      src: "asset:products/infrastructure/apple-sorting-optical-grading-and-packaging-line-05f6d-webp",
       width: 1408,
       height: 768,
       alt: "Apple sorting, optical grading and packaging line in packhouse facility",
@@ -149,7 +149,7 @@ export const capabilities = [
       "Produce reaching stronger markets, with greater value returning to the grower.",
     ],
     image: {
-      src: "/images/cold-storage-loading-dock-with-workers-preparing-d788b.webp",
+      src: "asset:products/infrastructure/cold-storage-loading-dock-with-workers-preparing-d788b-webp",
       width: 1408,
       height: 768,
       alt: "Cold storage loading dock with workers preparing crates for dispatch",

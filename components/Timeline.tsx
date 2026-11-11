@@ -1,4 +1,7 @@
 "use client";
+
+import { ContentText } from "@/features/cms/Content";
+
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -73,16 +76,28 @@ export function Timeline({
             data-card
             className={`card p-6 ${i % 2 ? "md:col-start-2" : "md:col-start-1 md:text-right"}`}
           >
-            <span className="micro">{p.phase}</span>
-            <h3 className="mt-2 text-[1.125rem] font-semibold tracking-tight">{p.title}</h3>
+            <span className="micro">
+              <ContentText>{p.phase}</ContentText>
+            </span>
+            <h3 className="mt-2 text-[1.125rem] font-semibold tracking-tight">
+              <ContentText>{p.title}</ContentText>
+            </h3>
             <dl className={`mt-3 space-y-2 text-small ${i % 2 ? "" : "md:ml-auto"}`}>
               <div>
-                <dt className="micro text-muted">The constraint</dt>
-                <dd className="mt-0.5">{p.constraint}</dd>
+                <dt className="micro text-muted">
+                  <ContentText>The constraint</ContentText>
+                </dt>
+                <dd className="mt-0.5">
+                  <ContentText>{p.constraint}</ContentText>
+                </dd>
               </div>
               <div>
-                <dt className="micro text-muted">What we built</dt>
-                <dd className="mt-0.5 text-forest/90">{p.response}</dd>
+                <dt className="micro text-muted">
+                  <ContentText>What we built</ContentText>
+                </dt>
+                <dd className="mt-0.5 text-forest/90">
+                  <ContentText>{p.response}</ContentText>
+                </dd>
               </div>
             </dl>
           </article>

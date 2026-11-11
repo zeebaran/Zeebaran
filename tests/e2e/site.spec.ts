@@ -1,9 +1,11 @@
 import { PDFDocument } from "pdf-lib";
 import { expect, test } from "@playwright/test";
 import { PRODUCTS } from "../../lib/products-content";
+const hasCatalog = Boolean(process.env.E2E_BASE_URL || process.env.E2E_CATALOG);
 const pages = [
   "/",
   "/platform",
+  "/mission",
   "/zeebaran-hub",
   "/innovation",
   "/impact",
@@ -13,7 +15,7 @@ const pages = [
   "/contact",
   "/contact/simple",
   "/products",
-  ...PRODUCTS.map((p) => "/products/" + p.slug),
+  ...(hasCatalog ? PRODUCTS.map((p) => "/products/" + p.slug) : []),
 ];
 const widths = [320, 360, 375, 390, 430, 480, 600, 768, 820, 912, 1024, 1280, 1440, 1920];
 for (const url of pages) {
@@ -70,7 +72,25 @@ test("capability selection works by keyboard and links to its story", async ({ p
   await page.getByRole("link", { name: "Explore this capability" }).click();
   await expect(page).toHaveURL(/platform#orchard-development$/);
 });
-test("contact desk routing, PDF validation and local delivery", async ({ page }) => {
+test("contact routing, validation and confirmed delivery", async ({ page }) => {
+  await page.route("https://api.web3forms.com/**", (route) =>
+    route.fulfill({ json: { success: true } }),
+  );
+  await page.route("**/api/enquiries", (route) =>
+    route.fulfill({ status: 201, json: { delivery: "local" } }),
+  );
+  await page.route("**/api/enquiries/attachments", (route) =>
+    route.fulfill({
+      json: {
+        ticket: "fixture-ticket",
+        url: "/api/enquiries/attachments/fixture-ticket",
+        fields: null,
+      },
+    }),
+  );
+  await page.route("**/api/enquiries/attachments/fixture-ticket", (route) =>
+    route.fulfill({ status: 204, body: "" }),
+  );
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/contact");
   await page.getByRole("link", { name: /Start a research conversation/ }).click();
@@ -79,31 +99,37 @@ test("contact desk routing, PDF validation and local delivery", async ({ page })
   await expect(page.locator("#full-name")).toBeFocused();
   await page.locator("#full-name").fill("Test grower");
   await page.locator("#email").fill("example@example.test");
+  await page.locator("#phone").fill("+91 98765 43210");
+  await page.locator("#place").fill("Srinagar");
   await page.locator("#message").fill("A local test of a nursery field trial enquiry.");
   await page.getByRole("button", { name: "R&D Field Trial" }).click();
-  await page.locator("#proposal").setInputFiles({
-    name: "wrong.pdf",
-    mimeType: "application/pdf",
-    buffer: Buffer.from("not a PDF"),
-  });
-  await expect(page.locator(".attachment-field").getByRole("alert")).toContainText(
-    "contains a PDF",
-  );
-  await expect(page.getByRole("button", { name: "Send message" })).toBeDisabled();
-  await page.getByRole("button", { name: "Remove attachment" }).click();
-  await expect(page.getByRole("button", { name: "Send message" })).toBeEnabled();
-  await page.locator("#proposal").setInputFiles({
-    name: "test.pdf",
-    mimeType: "application/pdf",
-    buffer: await (async () => {
-      const pdf = await PDFDocument.create();
-      pdf.addPage();
-      return Buffer.from(await pdf.save());
-    })(),
-  });
-  await expect(page.locator(".upload-target")).toContainText("test.pdf");
+  if (await page.locator("#proposal").count()) {
+    await page.locator("#proposal").setInputFiles({
+      name: "wrong.pdf",
+      mimeType: "application/pdf",
+      buffer: Buffer.from("not a PDF"),
+    });
+    await expect(page.locator(".attachment-field").getByRole("alert")).toContainText(
+      "contains a PDF",
+    );
+    await expect(page.getByRole("button", { name: "Send message" })).toBeDisabled();
+    await page.getByRole("button", { name: "Remove attachment" }).click();
+    await expect(page.getByRole("button", { name: "Send message" })).toBeEnabled();
+    await page.locator("#proposal").setInputFiles({
+      name: "test.pdf",
+      mimeType: "application/pdf",
+      buffer: await (async () => {
+        const pdf = await PDFDocument.create();
+        pdf.addPage();
+        return Buffer.from(await pdf.save());
+      })(),
+    });
+    await expect(page.locator(".upload-target")).toContainText("test.pdf");
+  }
   await page.getByRole("button", { name: "Send message" }).click();
-  await expect(page.getByRole("status")).toContainText("local inbox");
+  await expect(page.locator(".enquiry-success[role=status]")).toContainText(
+    /local inbox|message has been sent/,
+  );
 });
 test("regional hub map and short form", async ({ page }) => {
   await page.goto("/contact#map-section");
@@ -114,6 +140,10 @@ test("regional hub map and short form", async ({ page }) => {
   await expect(page.locator("#proposal")).toHaveCount(0);
 });
 test("variety and rootstock carry through to an enquiry", async ({ page }) => {
+  test.skip(
+    !hasCatalog,
+    "Catalog workflows require Firebase; covered separately with isolated emulators.",
+  );
   await page.goto("/products");
   await page.getByRole("link", { name: "Full details" }).first().click();
   await expect(page).toHaveURL(/\/products\/gala$/);

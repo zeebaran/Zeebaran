@@ -1,6 +1,12 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // The browser never writes catalog data directly. Published reads are served by
+    // bounded, cached server routes. The Admin SDK uses IAM and must independently
+    // enforce verified sessions, roles, validation and transactional invariants.
+    match /catalogEntries/{entry} { allow read, write: if false; }
+    match /catalogPublished/{entry} { allow read, write: if false; }
+    match /catalogAudit/{event} { allow read, write: if false; }
     match /{document=**} {
       allow read, write: if false;
     }
