@@ -1,7 +1,6 @@
-import strategic from "./strategic-partners.json";
 import { partnerCards } from "@/lib/partnerships-content";
-import type { PartnerEntry, PartnerProfile } from "./partners";
-export const strategicPartners = strategic as PartnerEntry[];
+import { strategicPartners, type PartnerEntry, type PartnerProfile } from "./partners";
+export { strategicPartners };
 export const institutionalPartners: PartnerEntry[] = partnerCards.flatMap((group) =>
   group.items.map((item) => ({
     id: item.name

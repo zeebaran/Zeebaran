@@ -7,7 +7,15 @@ describe("managed partner strip", () => {
     const content = emptyContent();
     content.text[textKey("CIV")] = "Edited CIV";
     expect(partnerEntries(content)[0].name).toBe("Edited CIV");
-    expect(partnerEntries(content)).toHaveLength(5);
+    expect(partnerEntries(content).map((partner) => partner.id)).toEqual([
+      "civ",
+      "fruit-control",
+      "fiedlin",
+      "gripple",
+      "incofin",
+      "balson",
+      "feno-nursery",
+    ]);
     expect(partnerEntries({ ...content, partners: [] })).toEqual([]);
     expect(partnerEntries({ ...content, partners: [defaultPartners[1]] })).toHaveLength(1);
   });

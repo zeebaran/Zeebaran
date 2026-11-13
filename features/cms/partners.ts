@@ -1,3 +1,4 @@
+import strategic from "./strategic-partners.json";
 import { textKey, type ContentValue, type MediaValue } from "./model";
 export const partnerFonts = [
   { id: "sans", label: "Brand sans" },
@@ -46,15 +47,18 @@ export const defaultPartners: PartnerEntry[] = [
   { id: "gripple", name: "GRIPPLE", mode: "text", font: "sans-italic", preset: "gripple" },
   { id: "incofin", name: "incofin", mode: "text", font: "sans", preset: "incofin" },
 ];
+export const strategicPartners = strategic as PartnerEntry[];
+
 export function partnerEntries(content: ContentValue): PartnerEntry[] {
   if (content.partners !== undefined) return content.partners;
-  return defaultPartners.map((partner) => ({
+  const legacyPartners = defaultPartners.map((partner) => ({
     ...partner,
     name: content.text[textKey(partner.name)] ?? partner.name,
     ...(partner.subtitle
       ? { subtitle: content.text[textKey(partner.subtitle)] ?? partner.subtitle }
       : {}),
   }));
+  return [...legacyPartners, ...strategicPartners];
 }
 /** Shared preview/input boundary; media provenance is verified separately on the server. */
 export function isPartnerEntries(value: unknown, allowIncomplete = false): value is PartnerEntry[] {

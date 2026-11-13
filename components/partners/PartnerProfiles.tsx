@@ -3,7 +3,7 @@ import { createContext, useContext, useEffect, useRef, useState, type ReactNode 
 import { X, ArrowUpRight } from "lucide-react";
 import { Dialog } from "@/features/admin/Dialog";
 import { usePartners } from "@/features/cms/Content";
-import { partnerLabel, type PartnerEntry } from "@/features/cms/partners";
+import { partnerLabel, strategicPartners, type PartnerEntry } from "@/features/cms/partners";
 import { partnerProfile } from "@/features/cms/partner-profiles";
 import { PartnerMark } from "./PartnerMark";
 import styles from "./partner-profile.module.css";
@@ -55,6 +55,26 @@ export function PartnerProfiles({ children }: { children: ReactNode }) {
       {children}
       {chosen && <Profile partner={chosen} close={close} />}
     </Context.Provider>
+  );
+}
+export function StrategicPartnerButtons() {
+  const partners = usePartners().filter((partner) =>
+    strategicPartners.some((strategic) => strategic.id === partner.id),
+  );
+  if (!partners.length) return null;
+  return (
+    <ul className="mb-10 flex flex-wrap gap-4">
+      {partners.map((partner) => (
+        <li key={partner.id}>
+          <PartnerProfileButton
+            partner={partner}
+            className="inline-flex items-center gap-2 rounded-full border border-forest/15 bg-white px-4 py-2 text-[0.8125rem] font-semibold text-forest shadow-sm transition-colors hover:bg-cream"
+          >
+            {partnerLabel(partner)}
+          </PartnerProfileButton>
+        </li>
+      ))}
+    </ul>
   );
 }
 export function PartnerProfileButton({
