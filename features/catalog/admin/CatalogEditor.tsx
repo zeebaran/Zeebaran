@@ -1,4 +1,5 @@
 "use client";
+import { useAdminFeedback } from "@/features/admin/notifications";
 import { MediaThumbnail } from "@/features/media/MediaThumbnail";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -27,10 +28,11 @@ import {
   type CatalogImage,
   type CatalogIndexEntry,
 } from "../model";
+import { harvestSeasons, normalizeHarvestSeason } from "../harvest";
+
 const varietyFields: [keyof CatalogData, string][] = [
   ["origin", "Origin"],
   ["localName", "Local or trade name"],
-  ["season", "Season"],
   ["seasonMonths", "Harvest window"],
   ["colour", "Colour"],
   ["flavour", "Flavour"],
@@ -59,10 +61,11 @@ export function CatalogEditor({
   role: "admin" | "editor";
 }) {
   const router = useRouter();
+  const mutationPending = useRef(false);
   const [record, setRecord] = useState(initial),
     [data, setData] = useState<CatalogData>(initial?.draft || emptyCatalog(kind)),
-    [error, setError] = useState(""),
-    [notice, setNotice] = useState(""),
+    [error, setError] = useAdminFeedback("error"),
+    [, setNotice] = useAdminFeedback("success"),
     [busy, setBusy] = useState(""),
     [picker, setPicker] = useState(false),
     [confirm, setConfirm] = useState<"publish" | "unpublish" | "delete" | null>(null),
@@ -92,6 +95,8 @@ export function CatalogEditor({
     setData((old) => ({ ...old, [key]: value }));
   }
   async function save(action: "save" | "publish" | "unpublish" | "delete") {
+    if (mutationPending.current) return;
+    mutationPending.current = true;
     setError("");
     setNotice("");
     setBusy(action);
@@ -115,7 +120,9 @@ export function CatalogEditor({
           ? "Published. The catalog and comparisons now use this revision."
           : action === "unpublish"
             ? "Unpublished. This entry is private."
-            : "Draft saved.",
+            : action === "delete"
+              ? "Entry moved to deleted items. You can restore it as a draft."
+              : "Draft saved.",
       );
       if (action === "delete") {
         dirtyRef.current = false;
@@ -129,6 +136,7 @@ export function CatalogEditor({
     } catch (e) {
       setError((e as Error).message);
     } finally {
+      mutationPending.current = false;
       setBusy("");
     }
   }
@@ -221,16 +229,7 @@ export function CatalogEditor({
           )}
         </div>
       </div>
-      {error && (
-        <p className="admin-notice admin-notice-error" role="alert">
-          {error}
-        </p>
-      )}
-      {notice && (
-        <p className="admin-notice" role="status">
-          {notice}
-        </p>
-      )}
+      {error && <p className="admin-notice admin-notice-error">{error}</p>}
       {role === "editor" && (
         <p className="admin-notice">
           You can prepare drafts. An administrator reviews and publishes them.
@@ -284,6 +283,25 @@ export function CatalogEditor({
             </div>
           </header>
           <div className="catalog-form-grid">
+            {kind === "variety" && (
+              <label>
+                Harvest season
+                <select
+                  value={normalizeHarvestSeason(data.season) || ""}
+                  onChange={(event) => field("season", event.target.value)}
+                >
+                  <option value="">Choose a harvest season</option>
+                  {harvestSeasons.map((season) => (
+                    <option key={season.key} value={season.value}>
+                      {season.label}
+                    </option>
+                  ))}
+                </select>
+                <small>
+                  Controls the harvest filter on the website. Publish to make changes live.
+                </small>
+              </label>
+            )}
             {(kind === "variety" ? varietyFields : rootFields).map(([key, label]) =>
               input(key, label, key === "note" || key === "bestFor"),
             )}
@@ -592,7 +610,7 @@ function RootstockLinks({ value, onChange }: { value: string[]; onChange: (v: st
   const [q, setQ] = useState(""),
     [items, setItems] = useState<CatalogIndexEntry[]>([]),
     [cursor, setCursor] = useState<string | null>(null),
-    [error, setError] = useState(""),
+    [error, setError] = useAdminFeedback("error"),
     [loadingMore, setLoadingMore] = useState(false);
   const requestVersion = useRef(0),
     paging = useRef(false);
@@ -619,7 +637,7 @@ function RootstockLinks({ value, onChange }: { value: string[]; onChange: (v: st
       clearTimeout(timer);
       if (requestVersion.current === version) requestVersion.current = version + 1;
     };
-  }, [q]);
+  }, [q, setError]);
   async function more() {
     if (!cursor || paging.current) return;
     const version = requestVersion.current;
@@ -701,11 +719,7 @@ function RootstockLinks({ value, onChange }: { value: string[]; onChange: (v: st
           {loadingMore ? "Loading rootstocks…" : "More rootstocks"}
         </button>
       )}
-      {error && (
-        <p role="alert" className="admin-error">
-          {error}
-        </p>
-      )}
+      {error && <p className="admin-error">{error}</p>}
     </div>
   );
 }
@@ -713,7 +727,7 @@ function RootstockLinks({ value, onChange }: { value: string[]; onChange: (v: st
 function OriginalImages({ onChoose }: { onChoose: (image: CatalogImage) => void }) {
   const [items, setItems] = useState<(CatalogImage & { name: string })[]>([]),
     [cursor, setCursor] = useState<string | null>(null),
-    [error, setError] = useState(""),
+    [error, setError] = useAdminFeedback("error"),
     [loadingMore, setLoadingMore] = useState(false);
   const paging = useRef(false);
   useEffect(() => {
@@ -733,7 +747,7 @@ function OriginalImages({ onChoose }: { onChoose: (image: CatalogImage) => void 
     return () => {
       active = false;
     };
-  }, []);
+  }, [setError]);
   return (
     <section className="catalog-originals">
       <h3>Original site photographs</h3>
@@ -786,7 +800,7 @@ function OriginalImages({ onChoose }: { onChoose: (image: CatalogImage) => void 
           {loadingMore ? "Loading photographs…" : "More original photographs"}
         </button>
       )}
-      {error && <p role="alert">{error}</p>}
+      {error && <p>{error}</p>}
       <h3>Cloudinary collection</h3>
     </section>
   );

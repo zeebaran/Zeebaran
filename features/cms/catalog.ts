@@ -1,9 +1,12 @@
 import { assetId } from "@/features/media/delivery";
+import { governanceEditableCopy } from "@/lib/governance-content";
+import { homeAbility } from "@/lib/home-ability";
 import generated from "./catalog.generated.json";
 import { textKey, type PageDefinition } from "./model";
-import { NAV, FOOTER } from "@/lib/site";
+import { NAV, FOOTER, ABOUT_LINKS } from "@/lib/site";
 import { capabilities } from "@/lib/capabilities";
 import { nodes, stationNotes } from "@/features/contact/map-content";
+import { podcastCopy } from "@/features/podcast/model";
 const source = Object.fromEntries(
   Object.entries(generated as Record<string, PageDefinition>).map(([page, definition]) => [
     page,
@@ -13,11 +16,23 @@ const source = Object.fromEntries(
     },
   ]),
 ) as Record<string, PageDefinition>;
-const sharedLabels = [...NAV, ...FOOTER.explore, ...FOOTER.company, { label: "Contact" }].map(
-  (item) => ({ key: textKey(item.label), value: item.label, group: "Navigation & footer" }),
-);
+const sharedLabels = [
+  ...NAV,
+  ...ABOUT_LINKS,
+  ...FOOTER.explore,
+  ...FOOTER.company,
+  { label: "Contact" },
+].map((item) => ({ key: textKey(item.label), value: item.label, group: "Navigation & footer" }));
 export const catalog: Record<string, PageDefinition> = {
   ...source,
+  podcast: {
+    fields: Object.values(podcastCopy).map((value) => ({
+      key: textKey(value),
+      value,
+      group: "Bazm-e-Khayal",
+    })),
+    images: [],
+  },
   site: {
     ...source.site,
     fields: [
@@ -59,3 +74,11 @@ for (const page of ["contact", "contact-simple"])
     "Contact form",
   );
 register("contact", ["Regional hubs · geographic map"], "Regional locations");
+
+register(
+  "home",
+  homeAbility.flatMap((item) => [item.title, ...item.paragraphs, item.quote]),
+  "Ability is widely distributed. The means to act on it are not.",
+);
+
+register("governance", governanceEditableCopy, "People, culture & joining Zeebaran");

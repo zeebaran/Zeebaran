@@ -4,9 +4,11 @@ import { ArrowRight, Leaf } from "lucide-react";
 import { SectionHead } from "@/components/sections";
 import { Heading, Reveal } from "@/components/Motion";
 import { ContentText } from "@/features/cms/Content";
+import { CatalogSearch } from "./CatalogSearch";
+import type { CatalogSearchEntry } from "./search";
 import { CompareButton } from "./ComparisonProvider";
 import { catalogHref, type CatalogItem } from "./model";
-import { nurseryEnquiry } from "@/lib/nursery-enquiry";
+import { NurseryEnquiryLink } from "@/features/site/NurseryEnquiryLink";
 export function CatalogUnavailable() {
   return (
     <section className="wrap catalog-empty catalog-unavailable">
@@ -32,7 +34,19 @@ export function CatalogUnavailable() {
     </section>
   );
 }
-export function RootstockSection({ items, nextHref }: { items: CatalogItem[]; nextHref?: string }) {
+export function RootstockSection({
+  items,
+  nextHref,
+  search,
+  suggestions,
+  complete,
+}: {
+  items: CatalogItem[];
+  nextHref?: string;
+  search: string;
+  suggestions: CatalogSearchEntry[];
+  complete: boolean;
+}) {
   return (
     <section className="section bg-cream/50" id="rootstock-selection">
       <div className="wrap">
@@ -49,6 +63,9 @@ export function RootstockSection({ items, nextHref }: { items: CatalogItem[]; ne
             </ContentText>
           </p>
         </SectionHead>
+        <div className="mb-6">
+          <CatalogSearch kind="rootstock" term={search} entries={suggestions} complete={complete} />
+        </div>
         <div className="grid gap-4 sm:grid-cols-2">
           {items.map((r, i) => (
             <Reveal key={r.id} delay={(i % 2) * 0.08}>
@@ -100,10 +117,17 @@ export function RootstockSection({ items, nextHref }: { items: CatalogItem[]; ne
             </Reveal>
           ))}
         </div>
+        {search && items.length > 0 && (
+          <p role="status" className="mt-4 text-small text-muted">
+            {items.length}
+            {nextHref ? "+" : ""} {items.length === 1 ? "rootstock" : "rootstocks"}
+          </p>
+        )}
         {!items.length && (
-          <p className="catalog-empty">
-            Rootstock profiles will appear here when published. Our nursery team can advise on
-            current availability.
+          <p className="catalog-empty" role="status">
+            {search
+              ? `No rootstocks match “${search}”. Try another name or code, or clear the search.`
+              : "Rootstock profiles will appear here when published. Our nursery team can advise on current availability."}
           </p>
         )}
         {nextHref && (
@@ -135,9 +159,9 @@ export function RootstockDetail({ item }: { item: CatalogItem }) {
               <p className="mt-6 text-lead text-muted">{item.intro}</p>
               <div className="mt-8 flex flex-wrap gap-4">
                 <CompareButton item={{ id: item.id, name: item.name, kind: item.kind }} />
-                <Link className="catalog-action" href={nurseryEnquiry(undefined, item.code)}>
+                <NurseryEnquiryLink className="catalog-action" rootstock={item.code}>
                   Enquire about {item.code} <ArrowRight size={15} />
-                </Link>
+                </NurseryEnquiryLink>
               </div>
             </div>
             <div className="catalog-root-detail-photo">

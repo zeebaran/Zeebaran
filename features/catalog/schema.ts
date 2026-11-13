@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { normalizeHarvestSeason } from "./harvest";
 const text = (max = 500) => z.string().trim().max(max);
 export const slugSchema = z
   .string()
@@ -19,7 +20,7 @@ export const catalogSchema = z
     headline: text(240),
     intro: text(12000),
     origin: text(),
-    season: text(80),
+    season: text(80).transform((value) => normalizeHarvestSeason(value) || value),
     seasonMonths: text(120),
     colour: text(),
     flavour: text(),
@@ -78,15 +79,11 @@ export const catalogSchema = z
   });
 export function publicationProblems(d: z.infer<typeof catalogSchema>) {
   return [
+    d.kind === "variety" && !normalizeHarvestSeason(d.season) && "Choose a harvest season.",
     !d.intro && "Add a description.",
     !d.headline && "Add a headline.",
     !d.images.length && "Choose at least one image.",
     d.kind === "rootstock" && !d.code && "Add the rootstock code.",
   ].filter(Boolean) as string[];
 }
-export const normalizeSearch = (value: string) =>
-  value
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .trim();
+export { normalizeSearch } from "./search";

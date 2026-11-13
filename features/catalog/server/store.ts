@@ -1,3 +1,4 @@
+import { verifyMediaReferences } from "@/features/media/server/registration";
 import { authoredAsset, isCloudinaryImage } from "@/features/media/delivery";
 import "server-only";
 import {
@@ -105,8 +106,7 @@ export async function adminEntries(
     nextCursor: docs.length > 25 && last ? encodeCursor([last.get("nameSort"), last.id]) : null,
   };
 }
-async function validateImages(data: CatalogData, original?: CatalogData) {
-  const db = catalogDb();
+function validateImages(data: CatalogData) {
   data.images = data.images.map((image) => {
     const asset = authoredAsset(image.src);
     return asset
@@ -121,34 +121,6 @@ async function validateImages(data: CatalogData, original?: CatalogData) {
   });
   if (data.images.some((image) => !isCloudinaryImage(image.src) || !image.publicId))
     throw new AdminError(422, "Choose a verified Cloudinary photograph from the media library.");
-  const ids = [
-    ...new Set(
-      data.images
-        .filter((i) => !original?.images.some((o) => o.src === i.src && o.publicId === i.publicId))
-        .map((i) => i.publicId),
-    ),
-  ];
-  if (ids.some((id) => !id))
-    throw new AdminError(422, "Choose images from the verified media library.");
-  if (!ids.length) return;
-  const docs = await db.getAll(
-    ...ids.map((id) => db.collection("cmsMedia").doc(Buffer.from(id!).toString("base64url"))),
-  );
-  const library = new Map(docs.map((d) => [d.get("publicId"), d.data()]));
-  for (const image of data.images) {
-    if (original?.images.some((o) => o.src === image.src && o.publicId === image.publicId))
-      continue;
-    const asset = library.get(image.publicId);
-    if (
-      !asset ||
-      asset.resourceType !== "image" ||
-      asset.src !== image.src ||
-      !image.src.startsWith(
-        "https://res.cloudinary.com/" + process.env.CLOUDINARY_CLOUD_NAME + "/image/upload/",
-      )
-    )
-      throw new AdminError(422, "Image verification failed. Choose a verified library image.");
-  }
 }
 export type CatalogAction = "save" | "publish" | "unpublish" | "delete" | "restore";
 export async function writeEntry(
@@ -163,8 +135,6 @@ export async function writeEntry(
   const db = catalogDb(),
     ref = db.collection("catalogEntries").doc(id),
     publicRef = db.collection("catalogPublished").doc(id);
-  const existing = await ref.get();
-  const old = existing.data();
   let data: CatalogData | undefined;
   if (action === "save" || action === "publish") {
     const parsed = catalogSchema.safeParse(raw);
@@ -173,14 +143,15 @@ export async function writeEntry(
     data = parsed.data;
     if (data.slug !== id)
       throw new AdminError(422, "The catalog URL cannot change after creation.");
-    if (old && old.kind !== data.kind) throw new AdminError(422, "The entry type cannot change.");
     if (action === "publish") {
       const problems = publicationProblems(data);
       if (problems.length) throw new AdminError(422, problems.join(" "));
     }
-    await validateImages(data, old?.draft);
+    validateImages(data);
   }
   await db.runTransaction(async (tx) => {
+    // Match deletion lock order to avoid media/content lock inversions.
+    if (data) await verifyMediaReferences(db, tx, data);
     const current = await tx.get(ref),
       d = current.data();
     if ((d?.revision || 0) !== revision)
@@ -188,8 +159,13 @@ export async function writeEntry(
     if (!d && action !== "save" && action !== "publish")
       throw new AdminError(404, "Catalog entry not found.");
     if (!d && revision !== 0) throw new AdminError(409, "This entry no longer exists.");
+    if (d?.purging) throw new AdminError(409, "This entry is being permanently deleted.");
+    if (action === "restore" && !d?.deleted)
+      throw new AdminError(409, "Only deleted entries can be restored as drafts.");
     if (d?.deleted && action !== "restore")
       throw new AdminError(409, "Restore the deleted entry before editing it.");
+    if (d && data && d.kind !== data.kind)
+      throw new AdminError(422, "The entry type cannot change.");
     const selected = data || (d!.draft as CatalogData);
     if (action === "delete" && confirmation !== selected.name)
       throw new AdminError(422, "Type the exact entry name to confirm deletion.");
@@ -227,13 +203,14 @@ export async function writeEntry(
             ".",
         );
     }
+    if (action === "restore") await verifyMediaReferences(db, tx, selected);
     const now = Timestamp.now(),
       nextRevision = revision + 1;
     const update = {
       draft: selected,
       kind: selected.kind,
       nameSort: normalizeSearch(selected.name),
-      rootstockRefs: action === "delete" ? [] : refs,
+      rootstockRefs: refs,
       revision: nextRevision,
       published:
         action === "publish"

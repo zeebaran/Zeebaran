@@ -1,8 +1,8 @@
 import { ContentText } from "@/features/cms/Content";
-import { nurseryEnquiry, whatsappAvailable } from "@/lib/nursery-enquiry";
+import { NurseryEnquiryLink } from "@/features/site/NurseryEnquiryLink";
 import { MessageCircle } from "lucide-react";
 import { ContentImage as Image } from "@/features/cms/Content";
-import { Heading, Reveal, Stagger, Item } from "@/components/Motion";
+import { Heading, Stagger, Item } from "@/components/Motion";
 import { TextLink } from "@/components/ui";
 import { SectionHead, CtaBand } from "@/components/sections";
 import { Photo } from "@/components/Photo";
@@ -13,13 +13,10 @@ import { ContentProvider } from "@/features/cms/Content";
 import { emptyContent } from "@/features/cms/model";
 import { ContentLink as Link } from "@/features/cms/Content";
 import type { CSSProperties } from "react";
-
-const seasonColour: Record<string, string> = {
-  Early: "bg-leaf/20 text-green",
-  Mid: "bg-orange/15 text-[#a34404]",
-  Late: "bg-forest/10 text-forest",
-  "Very Late": "bg-green/10 text-green",
-};
+import { CatalogSearch } from "@/features/catalog/CatalogSearch";
+import type { CatalogSearchEntry } from "@/features/catalog/search";
+import { HarvestFilters } from "@/features/catalog/HarvestFilters";
+import { harvestSeasons, normalizeHarvestSeason } from "@/features/catalog/harvest";
 
 function Badge({ label }: { label: string }) {
   return (
@@ -32,7 +29,7 @@ function Badge({ label }: { label: string }) {
 function SeasonPip({ season }: { season: Product["season"] }) {
   return (
     <span
-      className={`rounded-full px-2.5 py-1 text-[0.625rem] font-semibold uppercase tracking-wider ${seasonColour[season] || "bg-forest/10 text-forest"}`}
+      className={`rounded-full px-2.5 py-1 text-[0.625rem] font-semibold uppercase tracking-wider ${harvestSeasons.find((entry) => entry.value === normalizeHarvestSeason(season))?.colour || "bg-forest/10 text-forest"}`}
     >
       <ContentText>{season}</ContentText> <ContentText>Season</ContentText>
     </span>
@@ -41,7 +38,6 @@ function SeasonPip({ season }: { season: Product["season"] }) {
 
 /* ─── Product Card (listing page) ─────────────────────────────────────────── */
 function ProductCard({ p }: { p: Product }) {
-  const whatsapp = nurseryEnquiry(p.name);
   return (
     <article
       data-catalog-entry={p.slug}
@@ -132,34 +128,18 @@ function ProductCard({ p }: { p: Product }) {
             </TextLink>
             <CompareButton item={{ id: p.id, name: p.name, kind: p.kind }} />
           </div>
-          <a
-            href={whatsapp}
-            target={whatsappAvailable ? "_blank" : undefined}
-            rel={whatsappAvailable ? "noopener noreferrer" : undefined}
+          <NurseryEnquiryLink
+            variety={p.name}
             className="inline-flex min-h-10 w-full items-center justify-center gap-1.5 rounded-full bg-[#25d366] px-4 py-1.5 text-[0.6875rem] font-semibold text-white shadow-sm transition hover:bg-[#20c05c] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green active:scale-[0.98]"
             aria-label={`Enquire about ${p.name} `}
           >
             {/* WhatsApp icon inline SVG */}
             <MessageCircle className="size-4 shrink-0" aria-hidden />
             <ContentText>Enquire</ContentText>
-          </a>
+          </NurseryEnquiryLink>
         </div>
       </div>
     </article>
-  );
-}
-
-/* ─── Season Filter Legend ─────────────────────────────────────────────────── */
-function SeasonLegend() {
-  return (
-    <Reveal className="flex flex-wrap items-center gap-3">
-      <span className="micro mr-1 text-muted">
-        <ContentText>Harvest windows:</ContentText>
-      </span>
-      {(["Early", "Mid", "Late", "Very Late"] as const).map((s) => (
-        <SeasonPip key={s} season={s} />
-      ))}
-    </Reveal>
   );
 }
 
@@ -218,21 +198,9 @@ const COLLAGE_TILES: {
 
 function PhotoCollage({ products }: { products: CatalogItem[] }) {
   return (
-    /*
-     * Responsive container:
-     * – mobile  : full wrap width, capped at 480 px, height scales via clamp
-     * – desktop : fixed 480 px column beside the text (set by parent grid)
-     * overflow-hidden clips tiles that escape the boundary at the edges;
-     * paddingBottom gives shadow room before the clip.
-     */
+    // Keep the mobile composition compact; rotated lower prints need visible overflow.
     <div
-      className="pointer-events-none relative mx-auto w-full select-none"
-      style={{
-        maxWidth: 480,
-        height: "clamp(260px, 60vw, 480px)",
-        paddingBottom: 20,
-        overflow: "hidden",
-      }}
+      className="pointer-events-none relative mx-auto aspect-square w-[86%] max-w-[340px] select-none overflow-visible sm:aspect-auto sm:h-[clamp(260px,60vw,480px)] sm:w-full sm:max-w-[480px]"
       aria-hidden
     >
       <ContentText>
@@ -274,7 +242,7 @@ function PhotoCollage({ products }: { products: CatalogItem[] }) {
                   alt={t.alt}
                   fill
                   className="object-cover"
-                  sizes="(min-width:1024px) 220px, 45vw"
+                  sizes="(min-width:640px) 280px, 50vw"
                   /* only the centre tile (index 2) is likely above-fold on desktop */
                   priority={i === 2}
                 />
@@ -289,7 +257,7 @@ function PhotoCollage({ products }: { products: CatalogItem[] }) {
 /* ─── Page Sections ────────────────────────────────────────────────────────── */
 function ProductsHero({ products }: { products: CatalogItem[] }) {
   return (
-    <section className="hero-wash relative -mt-[4.5rem] overflow-hidden pb-16 pt-[6.5rem] sm:-mt-20 sm:pb-20 sm:pt-[7.5rem]">
+    <section className="hero-wash relative -mt-[4.5rem] overflow-hidden pb-8 pt-[8.5rem] sm:-mt-20 sm:pb-20 sm:pt-[7.5rem] lg:pt-[10rem]">
       <div className="home-wrap">
         <div className="grid items-center gap-6 sm:gap-10 lg:grid-cols-[1fr_480px] lg:gap-12">
           {/* ── left: text ── */}
@@ -315,7 +283,7 @@ function ProductsHero({ products }: { products: CatalogItem[] }) {
               <p>
                 <ContentText>
                   Every variety Zeebaran supplies comes from certified, virus-indexed clonal mother
-                  blocks. We match rootstock to elevation, soil type, and market destination — not
+                  blocks. We match rootstock to elevation, soil type, and market destination not
                   just what is available.
                 </ContentText>
               </p>
@@ -371,33 +339,49 @@ function IntroStrip({ counts }: { counts: { variety: number; rootstock: number }
   );
 }
 
-function ProductGrid({ products, nextHref }: { products: Product[]; nextHref?: string }) {
+function ProductGrid({
+  products,
+  nextHref,
+  complete,
+  season,
+  search,
+  suggestions,
+}: {
+  products: Product[];
+  nextHref?: string;
+  complete: boolean;
+  season: string | null;
+  search: string;
+  suggestions: CatalogSearchEntry[];
+}) {
   return (
-    <section className="section">
+    <section className="section" id="variety-portfolio">
       <div className="wrap">
-        <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <SectionHead eyebrow="Our variety portfolio" title="Choose your {variety.}" />
-          <SeasonLegend />
-        </div>
-        <Stagger className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {products.map((p) => (
-            <Item key={p.slug} className="h-full">
+        <HarvestFilters
+          heading={<SectionHead eyebrow="Our variety portfolio" title="Choose your {variety.}" />}
+          searchBar={
+            <CatalogSearch kind="variety" term={search} entries={suggestions} complete={complete} />
+          }
+          search={search}
+          complete={complete}
+          serverSeason={season}
+          entries={products.map((p) => ({
+            id: p.id,
+            season: p.season,
+            card: (
               <ContentProvider value={emptyContent()} page="catalog">
                 <ProductCard p={p} />
               </ContentProvider>
-            </Item>
-          ))}
-        </Stagger>
-        {!products.length && (
-          <p className="catalog-empty">
-            No varieties are published yet. Contact our nursery team for planting advice.
-          </p>
-        )}
-        {nextHref && (
-          <Link className="catalog-action mt-8" href={nextHref}>
-            More varieties →
-          </Link>
-        )}
+            ),
+          }))}
+          next={
+            nextHref ? (
+              <Link prefetch={false} className="catalog-action mt-8" href={nextHref}>
+                More varieties →
+              </Link>
+            ) : undefined
+          }
+        />
       </div>
     </section>
   );
@@ -423,19 +407,48 @@ export function ProductsPage({
   counts,
   varietyNext,
   rootstockNext,
+  heroProducts,
+  harvestSeason = null,
+  completeVarieties,
+  completeRootstocks,
+  varietySuggestions,
+  rootstockSuggestions,
+  varietySearch = "",
+  rootstockSearch = "",
 }: {
   products: Product[];
   rootstocks: CatalogItem[];
   counts: { variety: number; rootstock: number };
   varietyNext?: string;
   rootstockNext?: string;
+  heroProducts: Product[];
+  harvestSeason?: string | null;
+  completeVarieties: boolean;
+  completeRootstocks: boolean;
+  varietySuggestions: CatalogSearchEntry[];
+  rootstockSuggestions: CatalogSearchEntry[];
+  varietySearch?: string;
+  rootstockSearch?: string;
 }) {
   return (
     <>
-      <ProductsHero products={products} />
+      <ProductsHero products={heroProducts} />
       <IntroStrip counts={counts} />
-      <ProductGrid products={products} nextHref={varietyNext} />
-      <RootstockSection items={rootstocks} nextHref={rootstockNext} />
+      <ProductGrid
+        products={products}
+        nextHref={varietyNext}
+        complete={completeVarieties}
+        season={harvestSeason}
+        search={varietySearch}
+        suggestions={varietySuggestions}
+      />
+      <RootstockSection
+        items={rootstocks}
+        nextHref={rootstockNext}
+        search={rootstockSearch}
+        suggestions={rootstockSuggestions}
+        complete={completeRootstocks}
+      />
       <div className="py-8 sm:py-12" />
       <ProductsCta />
     </>

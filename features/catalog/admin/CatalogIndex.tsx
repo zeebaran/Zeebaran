@@ -1,23 +1,29 @@
 "use client";
+import { useAdminFeedback } from "@/features/admin/notifications";
+import { PurgeEntryDialog } from "./PurgeEntryDialog";
 import { AdminLink as Link } from "@/features/admin/AdminLink";
 import { useState, useEffect, useRef } from "react";
-import { Plus, ArrowUpRight, RotateCcw, Leaf, Search } from "lucide-react";
+import { Plus, ArrowUpRight, RotateCcw, Leaf, Search, Trash2 } from "lucide-react";
 import { adminRequest } from "@/features/admin/client";
 import type { CatalogIndexEntry, CatalogKind, CatalogPage } from "../model";
 export function CatalogIndex({
   initial,
   kind,
   deleted,
+  canPurge = false,
 }: {
   initial: CatalogPage<CatalogIndexEntry>;
   kind: CatalogKind;
   deleted: boolean;
+  canPurge?: boolean;
 }) {
   const [rows, setRows] = useState(initial.items),
     [cursor, setCursor] = useState(initial.nextCursor),
     [busy, setBusy] = useState(""),
-    [error, setError] = useState(""),
+    [error, setError] = useAdminFeedback("error"),
     [q, setQ] = useState("");
+  const [purging, setPurging] = useState<CatalogIndexEntry | null>(null),
+    [, setNotice] = useAdminFeedback("success");
   const hasSearched = useRef(false),
     requestVersion = useRef(0),
     paging = useRef(false);
@@ -48,7 +54,7 @@ export function CatalogIndex({
       clearTimeout(timer);
       if (requestVersion.current === version) requestVersion.current = version + 1;
     };
-  }, [q, kind, deleted]);
+  }, [q, kind, deleted, setError]);
   function search(value: string) {
     hasSearched.current = true;
     requestVersion.current++;
@@ -89,6 +95,7 @@ export function CatalogIndex({
         revision: entry.revision,
       });
       setRows((old) => old.filter((i) => i.id !== entry.id));
+      setNotice("Entry restored as a draft. Publish it when ready.");
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -136,11 +143,7 @@ export function CatalogIndex({
           Deleted {kind === "variety" ? "varieties" : "rootstocks"}
         </Link>
       </nav>
-      {error && (
-        <p className="admin-notice admin-notice-error" role="alert">
-          {error}
-        </p>
-      )}
+      {error && <p className="admin-notice admin-notice-error">{error}</p>}
       <label className="admin-search">
         <Search size={16} />
         <input
@@ -167,14 +170,27 @@ export function CatalogIndex({
               </p>
             </div>
             {deleted ? (
-              <button
-                disabled={!!busy}
-                className="admin-btn admin-outline"
-                onClick={() => void restore(entry)}
-              >
-                <RotateCcw size={14} />
-                {busy === entry.id ? "Restoring…" : "Restore as draft"}
-              </button>
+              <div className="catalog-trash-actions">
+                <button
+                  disabled={!!busy}
+                  className="admin-btn admin-outline"
+                  onClick={() => void restore(entry)}
+                >
+                  <RotateCcw size={14} />
+                  {busy === entry.id ? "Restoring…" : "Restore as draft"}
+                </button>
+                {canPurge && (
+                  <button
+                    type="button"
+                    disabled={!!busy}
+                    className="admin-btn admin-outline"
+                    onClick={() => setPurging(entry)}
+                  >
+                    <Trash2 size={14} />
+                    Delete permanently
+                  </button>
+                )}
+              </div>
             ) : (
               <Link className="admin-btn admin-outline" href={"/admin/catalog/" + entry.id}>
                 Edit entry <ArrowUpRight size={15} />
@@ -206,6 +222,17 @@ export function CatalogIndex({
         <button disabled={!!busy} className="admin-btn admin-outline" onClick={() => void more()}>
           {busy === "more" ? "Loading…" : "Load more entries"}
         </button>
+      )}
+      {purging && (
+        <PurgeEntryDialog
+          entry={purging}
+          onClose={() => setPurging(null)}
+          onDeleted={(message) => {
+            setRows((old) => old.filter((item) => item.id !== purging.id));
+            setNotice(message);
+            setPurging(null);
+          }}
+        />
       )}
     </div>
   );

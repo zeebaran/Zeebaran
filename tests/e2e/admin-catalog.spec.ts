@@ -197,3 +197,37 @@ test("partial media pages and filtered results have accurate empty states", asyn
   await page.getByLabel("Search media", { exact: true }).fill("not-found");
   await expect(page.locator(".admin-empty")).toContainText("No matches in the loaded media");
 });
+
+test("rapid catalog saves send one mutation and unlock retry after a failure", async ({ page }) => {
+  const id = created[0];
+  await page.goto(origin + "/admin/catalog/" + id);
+  const name = page.locator(".catalog-form-grid input").first();
+  await name.fill("Catalog mutation regression");
+  let requests = 0;
+  let release!: () => void;
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await page.route("**/api/admin/catalog/" + id, async (route) => {
+    if (route.request().method() !== "POST") return route.continue();
+    requests++;
+    await gate;
+    await route.fulfill({ status: 503, json: { error: "Temporary catalog fixture failure" } });
+  });
+  const save = page.getByRole("button", { name: "Save draft", exact: true });
+  await save.evaluate((button) => {
+    (button as HTMLButtonElement).click();
+    (button as HTMLButtonElement).click();
+  });
+  await expect.poll(() => requests).toBeGreaterThan(0);
+  await page.waitForTimeout(150);
+  release();
+  await expect(page.locator(".admin-notice-error")).toContainText(
+    "Temporary catalog fixture failure",
+  );
+  expect(requests).toBe(1);
+  await expect(name).toHaveValue("Catalog mutation regression");
+  await page.unroute("**/api/admin/catalog/" + id);
+  await save.click();
+  await expect(page.getByText("Draft saved.", { exact: true })).toBeVisible();
+});

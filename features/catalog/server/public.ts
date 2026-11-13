@@ -1,4 +1,5 @@
 import "server-only";
+import { normalizeHarvestSeason, type HarvestSeason } from "../harvest";
 import { cache } from "react";
 import { unstable_cache, revalidateTag, revalidatePath } from "next/cache";
 import { FieldPath, type Query, type DocumentData } from "firebase-admin/firestore";
@@ -53,12 +54,15 @@ export const publishedPage = cache(
     cursor: string | null = null,
     q = "",
     limit = 24,
+    season: HarvestSeason | null = null,
   ): Promise<CatalogPage<CatalogItem>> => {
     const search = normalizeSearch(q).slice(0, 80);
+    const harvest = normalizeHarvestSeason(season);
     return unstable_cache(
       async () => {
         configured();
         let query: Query = catalogDb().collection("catalogPublished").where("kind", "==", kind);
+        if (harvest && kind === "variety") query = query.where("season", "==", harvest);
         const order = search ? "nameSort" : "sortOrder";
         if (search)
           query = query.where("nameSort", ">=", search).where("nameSort", "<=", search + "\uf8ff");
@@ -88,7 +92,7 @@ export const publishedPage = cache(
           nextCursor: docs.length > limit && last ? encodeCursor([last.get(order), last.id]) : null,
         };
       },
-      ["catalog-page", namespace(), kind, cursor || "", search, String(limit)],
+      ["catalog-page", namespace(), kind, cursor || "", search, String(limit), harvest || ""],
       { tags: ["catalog-kind:" + kind], revalidate: 300 },
     )();
   },
@@ -97,8 +101,9 @@ export async function publishedSummaries(
   kind: CatalogKind,
   cursor: string | null = null,
   q = "",
+  season: HarvestSeason | null = null,
 ): Promise<CatalogPage<CatalogSummary>> {
-  const page = await publishedPage(kind, cursor, q);
+  const page = await publishedPage(kind, cursor, q, 24, season);
   return { ...page, items: page.items.map(summary) };
 }
 export const resolvePublished = cache(async (ids: string[]) => {

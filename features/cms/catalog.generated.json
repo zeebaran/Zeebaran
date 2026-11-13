@@ -10940,5 +10940,30 @@
         "group": "Other varieties in our portfolio"
       }
     ]
+  },
+  "podcast": {
+    "fields": [
+      {
+        "key": "t-1fzg3hm1nq8el2-10",
+        "value": "BAZM-E-KHAYAL · THE ZEEBARAN PODCAST",
+        "group": "Bazm-e-Khayal"
+      },
+      {
+        "key": "t-zcp9zbcrqk0b-13",
+        "value": "Good questions.\nGrounded conversations.",
+        "group": "Bazm-e-Khayal"
+      },
+      {
+        "key": "t-1n2cc9a1a4nhgm-5o",
+        "value": "A meeting of minds, rooted in agriculture. Conversations with growers, doctors, scientists and professionals who bring experience, evidence and fresh perspective to the questions that matter in the field.",
+        "group": "Bazm-e-Khayal"
+      },
+      {
+        "key": "t-1rya31mdez9mg-s",
+        "value": "Conversations worth keeping.",
+        "group": "Bazm-e-Khayal"
+      }
+    ],
+    "images": []
   }
 }

@@ -10,7 +10,7 @@ describe("catalog data boundaries", () => {
   const draft = { ...emptyCatalog("variety"), slug: "an-authored-variety", name: "A variety" };
   it("allows incomplete private drafts but identifies publication requirements", () => {
     expect(catalogSchema.safeParse(draft).success).toBe(true);
-    expect(publicationProblems(draft)).toHaveLength(3);
+    expect(publicationProblems(draft)).toHaveLength(4);
   });
   it.each(["../private", "UPPERCASE", "a/b", "compare", "rootstocks", "<script>", "a".repeat(81)])(
     "rejects unsafe or reserved slugs: %s",

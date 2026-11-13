@@ -17,6 +17,17 @@ test("cleared and removed shared selections stay cleared after reload", async ({
   await page.reload();
   await expect(page.locator(".compare-dock")).toHaveCount(0);
 });
+test("invalid bookmark selections leave valid comparison items visible", async ({ page }) => {
+  await page.goto("/products/compare?left=gala&right=invalid%20slug");
+  await expect(page.getByRole("button", { name: "Remove Gala from comparison" })).toBeVisible();
+  await expect(page.locator(".compare-dock-choices button")).toHaveCount(1);
+});
+test("repeated bookmark parameters use the first value", async ({ page }) => {
+  await page.goto("/products/compare?left=fuji&left=m9&right=gala");
+  await expect(page.getByRole("button", { name: "Remove Fuji from comparison" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Remove Gala from comparison" })).toBeVisible();
+  await expect(page.locator(".compare-dock-choices button")).toHaveCount(2);
+});
 test("late rootstock pagination cannot enter the varieties selector", async ({ page, request }) => {
   const roots = (await (await request.get("/api/catalog?kind=rootstock")).json()).items;
   const varieties = (await (await request.get("/api/catalog?kind=variety")).json()).items;

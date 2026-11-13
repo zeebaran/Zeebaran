@@ -1,5 +1,6 @@
 import { CompareExperience } from "@/features/catalog/Comparison";
 import { resolvePublished } from "@/features/catalog/server/public";
+import { slugSchema } from "@/features/catalog/schema";
 import { CatalogUnavailable } from "@/features/catalog/PublicSections";
 import { pageMeta } from "@/lib/seo";
 export const metadata = pageMeta(
@@ -10,17 +11,17 @@ export const metadata = pageMeta(
 export default async function Page({
   searchParams,
 }: {
-  searchParams: Promise<{ left?: string; right?: string }>;
+  searchParams: Promise<{ left?: string | string[]; right?: string | string[] }>;
 }) {
-  const params = await searchParams;
-  let result: Awaited<ReturnType<typeof load>> | null = null;
-  async function load() {
-    return Promise.all([
-      resolvePublished([params.left, params.right].filter((id): id is string => !!id)),
-    ]);
-  }
+  const { left, right } = await searchParams;
+  const ids = [left, right]
+    .map((value) => (Array.isArray(value) ? value[0] : value))
+    .filter((id): id is string => slugSchema.safeParse(id).success);
+  let initial: Awaited<ReturnType<typeof resolvePublished>>;
   try {
-    result = await load();
-  } catch {}
-  return result ? <CompareExperience initial={result[0]} options={[]} /> : <CatalogUnavailable />;
+    initial = await resolvePublished(ids);
+  } catch {
+    return <CatalogUnavailable />;
+  }
+  return <CompareExperience initial={initial} options={[]} />;
 }
