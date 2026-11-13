@@ -41,7 +41,7 @@ export function MissionHero() {
           </div>
 
           {/* Right — vintage TV */}
-          <Reveal y={24} delay={0.2}>
+          <Reveal y={24} delay={0.2} className="empty:hidden">
             <VintageTV />
           </Reveal>
         </div>
@@ -374,13 +374,13 @@ export function MissionCta() {
         <Reveal delay={0.15} className="flex flex-wrap items-center justify-center gap-4">
           <Link
             href="/platform"
-            className="btn-orange rounded-full bg-orange px-7 py-3.5 text-[0.8125rem] font-semibold text-white shadow-md transition-all duration-300 hover:bg-[#e05d00] hover:shadow-lg"
+            className="action-motion btn-orange rounded-full bg-orange px-7 py-3.5 text-[0.8125rem] font-semibold text-white shadow-md transition-all duration-300 hover:bg-[#e05d00] hover:shadow-lg"
           >
             <ContentText>Explore the Platform</ContentText>
           </Link>
           <Link
             href="/contact"
-            className="rounded-full border border-green/20 bg-white px-7 py-3.5 text-[0.8125rem] font-semibold text-forest shadow-sm transition-all duration-300 hover:border-leaf"
+            className="action-motion rounded-full border border-green/20 bg-white px-7 py-3.5 text-[0.8125rem] font-semibold text-forest shadow-sm transition-all duration-300 hover:border-leaf"
           >
             <ContentText>Contact Zeebaran</ContentText>
           </Link>

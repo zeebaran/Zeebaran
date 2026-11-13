@@ -1,6 +1,8 @@
 "use client";
 
-import { ContentText } from "@/features/cms/Content";
+import { ContentText, useContentImageOverrides } from "@/features/cms/Content";
+import { imageKey } from "@/features/cms/model";
+import { useVisualEditing } from "@/features/cms/visual-context";
 
 import { ContentImage as Image } from "@/features/cms/Content";
 import { useEffect, useRef, useState } from "react";
@@ -50,7 +52,14 @@ const PHOTOS = [
 ];
 
 export function OrchardGallery() {
-  const [current, setCurrent] = useState(0);
+  const overrides = useContentImageOverrides();
+  const editing = useVisualEditing();
+  const photos = PHOTOS.filter((photo) => editing || overrides[imageKey(photo.src)] !== null);
+  const [selected, setSelected] = useState("");
+  const current = Math.max(
+    0,
+    photos.findIndex((photo) => photo.src === selected),
+  );
   const [paused, setPaused] = useState(false);
   const reduced = useReducedMotion();
   const container = useRef<HTMLElement>(null);
@@ -58,8 +67,17 @@ export function OrchardGallery() {
   const [pageVisible, setPageVisible] = useState(true);
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
-  const advancing = !paused && reduced === false && visible && pageVisible && !hovered && !focused;
+  const advancing =
+    photos.length > 1 &&
+    !paused &&
+    reduced === false &&
+    visible &&
+    pageVisible &&
+    !hovered &&
+    !focused;
+  const hasPhotos = photos.length > 0;
   useEffect(() => {
+    if (!hasPhotos) return;
     const element = container.current;
     if (!element) return;
     const observer = new IntersectionObserver(([entry]) => setVisible(entry.isIntersecting));
@@ -71,17 +89,19 @@ export function OrchardGallery() {
       observer.disconnect();
       document.removeEventListener("visibilitychange", visibility);
     };
-  }, []);
+  }, [hasPhotos]);
+  const nextPhoto = photos[current + 1]?.src ?? photos[0]?.src ?? "";
   useEffect(() => {
     if (!advancing) return;
-    const timer = setTimeout(() => setCurrent((c) => (c + 1) % PHOTOS.length), 3800);
+    const timer = setTimeout(() => setSelected(nextPhoto), 3800);
     return () => clearTimeout(timer);
-  }, [advancing, current]);
+  }, [advancing, nextPhoto]);
   function go(idx: number) {
     setPaused(true);
-    setCurrent(idx);
+    setSelected(photos[idx].src);
   }
 
+  if (!hasPhotos) return null;
   return (
     <section
       ref={container}
@@ -121,7 +141,7 @@ export function OrchardGallery() {
           }}
         >
           <ContentText>
-            {PHOTOS.map((photo, i) => (
+            {photos.map((photo, i) => (
               <div
                 key={photo.src}
                 aria-hidden={i !== current}
@@ -130,8 +150,8 @@ export function OrchardGallery() {
               >
                 <ContentText>
                   {(i === current ||
-                    i === (current + 1) % PHOTOS.length ||
-                    i === (current - 1 + PHOTOS.length) % PHOTOS.length) && (
+                    i === (current + 1) % photos.length ||
+                    i === (current - 1 + photos.length) % photos.length) && (
                     <Image
                       src={photo.src}
                       alt={photo.caption}
@@ -156,7 +176,7 @@ export function OrchardGallery() {
 
           {/* Prev arrow */}
           <button
-            onClick={() => go((current - 1 + PHOTOS.length) % PHOTOS.length)}
+            onClick={() => go((current - 1 + photos.length) % photos.length)}
             aria-label="Previous photo"
             className="absolute left-4 top-1/2 z-10 -translate-y-1/2 flex size-10 items-center justify-center rounded-full bg-black/25 backdrop-blur-sm transition hover:bg-black/50"
           >
@@ -173,7 +193,7 @@ export function OrchardGallery() {
 
           {/* Next arrow */}
           <button
-            onClick={() => go((current + 1) % PHOTOS.length)}
+            onClick={() => go((current + 1) % photos.length)}
             aria-label="Next photo"
             className="absolute right-4 top-1/2 z-10 -translate-y-1/2 flex size-10 items-center justify-center rounded-full bg-black/25 backdrop-blur-sm transition hover:bg-black/50"
           >
@@ -193,7 +213,7 @@ export function OrchardGallery() {
             <ContentText>{current + 1}</ContentText>{" "}
             <ContentText>
               / <ContentText></ContentText>
-              {PHOTOS.length}
+              {photos.length}
             </ContentText>
           </span>
 
@@ -217,7 +237,7 @@ export function OrchardGallery() {
         {/* ── Dot nav ── */}
         <div className="mt-5 flex items-center justify-center gap-0.5">
           <ContentText>
-            {PHOTOS.map((_, i) => (
+            {photos.map((_, i) => (
               <button
                 key={i}
                 onClick={() => go(i)}
@@ -237,7 +257,7 @@ export function OrchardGallery() {
         {/* ── Thumbnail strip ── */}
         <div className="mt-4 flex gap-2.5 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
           <ContentText>
-            {PHOTOS.map((photo, i) => (
+            {photos.map((photo, i) => (
               <button
                 key={photo.src}
                 onClick={() => go(i)}

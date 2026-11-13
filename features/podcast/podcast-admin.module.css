@@ -1,0 +1,152 @@
+.editor {
+  display: grid;
+  gap: 20px;
+}
+.heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 22px;
+}
+.heading h2 {
+  font-size: 25px;
+  font-weight: 500;
+  margin-bottom: 10px;
+  letter-spacing: -0.03em;
+}
+.heading p {
+  font-size: 12px;
+  line-height: 1.8;
+  color: #64745f;
+  max-width: 640px;
+}
+.heading > button {
+  flex-shrink: 0;
+}
+.editor label {
+  display: grid;
+  gap: 9px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.editor label small {
+  display: inline;
+  color: #64745f;
+  font-weight: 400;
+}
+.editor input:not([type="checkbox"]),
+.editor textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #d5ddce;
+  border-radius: 11px;
+  background: white;
+  color: #123b25;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 400;
+  min-width: 0;
+}
+.channel {
+  max-width: 650px;
+}
+.empty {
+  border: 1px dashed #bfcdb5;
+  border-radius: 16px;
+  padding: 30px;
+  color: #64745f;
+  font-size: 13px;
+  line-height: 1.8;
+}
+.card {
+  border: 1px solid #d5ddce;
+  border-radius: 16px;
+  background: #fffdf6;
+}
+.card summary {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  padding: 20px;
+  font-size: 13px;
+}
+.card summary > span {
+  font-size: 10px;
+  color: #718266;
+  letter-spacing: 0.12em;
+}
+.card summary strong {
+  font-weight: 500;
+  flex: 1;
+  overflow-wrap: anywhere;
+}
+.card summary small {
+  font-size: 10px;
+  color: #64745f;
+}
+.body {
+  padding: 0 22px 24px;
+  display: grid;
+  gap: 20px;
+}
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.actions label {
+  margin-right: auto;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.toggle input {
+  accent-color: #08652e;
+  width: 15px;
+  height: 15px;
+}
+.import {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+.import p {
+  font-size: 11px;
+  line-height: 1.7;
+  color: #64745f;
+}
+.columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+@media (max-width: 650px) {
+  .heading {
+    flex-direction: column;
+  }
+  .columns {
+    grid-template-columns: 1fr;
+  }
+  .body {
+    padding-inline: 15px;
+  }
+  .card summary {
+    padding: 15px;
+    gap: 8px;
+  }
+  .import {
+    align-items: start;
+    flex-direction: column;
+  }
+  .card summary small {
+    display: none;
+  }
+  .editor input:not([type="checkbox"]),
+  .editor textarea {
+    font-size: 16px;
+  }
+  .actions {
+    flex-wrap: wrap;
+  }
+}

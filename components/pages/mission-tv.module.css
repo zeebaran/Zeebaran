@@ -1,0 +1,104 @@
+.scene {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  padding-block: 1.5rem;
+}
+.artwork {
+  position: relative;
+  width: min(100%, 400px);
+}
+.image {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 24px 22px rgb(0 0 0 / 0.14));
+}
+.shadow {
+  position: absolute;
+  bottom: 0.5rem;
+  width: min(64%, 16rem);
+  height: 1.25rem;
+  border-radius: 50%;
+  background: rgb(0 0 0 / 0.1);
+  filter: blur(12px);
+}
+.sketch {
+  position: absolute;
+  inset: 0;
+  display: none;
+  width: 100%;
+  height: 100%;
+  color: #242424;
+  pointer-events: none;
+}
+.artwork:has(> [data-media-placeholder]) .sketch {
+  display: block;
+}
+.artwork:has(> [data-media-placeholder]) > [data-media-placeholder],
+.scene:has([data-media-placeholder]) .shadow {
+  opacity: 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .scene[data-loaded] .artwork:has(> img) {
+    animation: tv-settle 3.6s 180ms cubic-bezier(0.22, 0.68, 0.28, 1) both;
+  }
+  .scene[data-loaded]:has(img) .shadow {
+    animation: tv-shadow 3.6s 180ms cubic-bezier(0.22, 0.68, 0.28, 1) both;
+  }
+  .sketch path {
+    stroke-dasharray: 1;
+    animation: tv-ink 1.9s cubic-bezier(0.45, 0, 0.2, 1) both;
+  }
+  .sketch path:nth-child(2) {
+    animation-delay: 350ms;
+  }
+  .sketch path:nth-child(3) {
+    animation-delay: 700ms;
+  }
+  .sketch path:nth-child(4) {
+    animation-delay: 1050ms;
+  }
+  .sketch path:nth-child(5) {
+    animation-delay: 1550ms;
+  }
+}
+@keyframes tv-settle {
+  0% {
+    transform: translateY(10px) rotate(-1.4deg);
+  }
+  33% {
+    transform: translateY(-9px) rotate(0.55deg);
+  }
+  68% {
+    transform: translateY(-3px) rotate(-0.2deg);
+  }
+  100% {
+    transform: none;
+  }
+}
+@keyframes tv-shadow {
+  0% {
+    transform: scaleX(1.04);
+  }
+  33% {
+    transform: scaleX(0.9);
+    opacity: 0.62;
+  }
+  100% {
+    transform: none;
+  }
+}
+@keyframes tv-ink {
+  from {
+    stroke-dashoffset: 1;
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
