@@ -133,9 +133,9 @@ test("cached workspace snapshots refresh and late responses preserve unsaved edi
     const text = page.locator(".admin-copy-field textarea").first();
     await text.fill("Unsaved local wording");
     release();
-    await expect(page.getByRole("alert").filter({ hasText: "unsaved edits are preserved" })).toContainText(
-      "unsaved edits are preserved",
-    );
+    await expect(
+      page.getByRole("alert").filter({ hasText: "unsaved edits are preserved" }),
+    ).toContainText("unsaved edits are preserved");
     await expect(text).toHaveValue("Unsaved local wording");
     const anonymous = await context.browser()!.newContext();
     expect(
