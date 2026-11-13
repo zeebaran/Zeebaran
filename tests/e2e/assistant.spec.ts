@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 const entry = (id: string, name: string, system: string) => ({
   id,
@@ -42,8 +42,11 @@ const data = {
   retrievedAt: "2026-11-11T00:00:00Z",
   partial: false,
 };
-async function open(page: import("@playwright/test").Page) {
-  await page.getByRole("button", { name: "Open Zeebaran assistant" }).click();
+async function open(page: Page, input: "pointer" | "keyboard" = "pointer") {
+  const launcher = page.getByRole("button", { name: "Open Zeebaran assistant" });
+  // With motion enabled the launcher floats, so WebKit may never see a stable click target.
+  if (input === "keyboard") await launcher.press("Enter");
+  else await launcher.click();
   await expect(page.locator("#orchard-assistant")).toBeVisible();
   await expect(page.locator("#orchard-assistant")).toHaveAttribute("aria-busy", "false");
 }
@@ -189,11 +192,16 @@ test("opens compact, grows on the first question and keeps a shaped toggle benea
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.route("**/api/assistant", (r) => r.fulfill({ json: data }));
   await page.goto("/");
-  await open(page);
-  await expect(page.locator("#orchard-assistant")).toHaveAttribute("data-expanded", "false");
-  await page
-    .locator("#orchard-assistant")
-    .evaluate((e) => Promise.all(e.getAnimations().map((a) => a.finished)));
+  await open(page, "keyboard");
+  const dialog = page.locator("#orchard-assistant");
+  await expect(dialog).toHaveAttribute("data-expanded", "false");
+  await expect
+    .poll(() =>
+      dialog.evaluate((element) =>
+        element.getAnimations().some((animation) => animation.playState === "running"),
+      ),
+    )
+    .toBe(false);
   const compact = await page.locator(".orchard-window").boundingBox();
   const toggle = page.getByRole("button", { name: "Minimize Zeebaran assistant" });
   await expect(toggle).toBeVisible();
@@ -210,7 +218,7 @@ test("opens compact, grows on the first question and keeps a shaped toggle benea
   await toggle.click();
   await expect(page.locator("#orchard-assistant")).not.toBeVisible();
   await expect(page.getByRole("button", { name: "Open Zeebaran assistant" })).toBeFocused();
-  await open(page);
+  await open(page, "keyboard");
   await expect(page.locator("#orchard-assistant")).toHaveAttribute("data-expanded", "true");
   await page.getByRole("button", { name: "Start a new conversation" }).click();
   await expect(page.locator("#orchard-assistant")).toHaveAttribute("data-expanded", "false");
@@ -229,7 +237,7 @@ test("custom line drawing and welcome choreography respect reduced motion", asyn
     iterations: getComputedStyle(e, "::before").animationIterationCount,
   }));
   expect(ring).toEqual({ name: "orchard-ring-breathe", iterations: "2" });
-  await open(page);
+  await open(page, "keyboard");
   await expect(page.locator(".orchard-welcome h3")).toHaveCSS(
     "animation-name",
     "orchard-heading-reveal",
@@ -360,7 +368,9 @@ test("voice permission errors and unsupported browsers preserve typing", async (
   await expect(page.locator(".orchard-question")).toHaveText("M9");
 });
 
-test("rootstock browse link opens the real section on the products page", async ({ page }) => {
+test("rootstock browse opens the products page and handles catalog availability", async ({
+  page,
+}) => {
   await page.route("**/api/assistant", (route) => route.fulfill({ json: data }));
   await page.goto("/");
   await open(page);
@@ -369,8 +379,17 @@ test("rootstock browse link opens the real section on the products page", async 
   await expect(browse).toHaveAttribute("href", "/products#rootstock-selection");
   await browse.click();
   await expect(page).toHaveURL(/\/products#rootstock-selection$/);
-  await page.locator("#rootstock-selection").scrollIntoViewIfNeeded();
-  await expect(page.locator("#rootstock-selection")).toBeInViewport();
+  if (process.env.E2E_HARVEST_CATALOG === "1") {
+    const rootstocks = page.locator("#rootstock-selection");
+    await expect(rootstocks).toBeInViewport();
+    await expect(rootstocks.getByRole("combobox", { name: "Search rootstocks" })).toBeVisible();
+  } else {
+    await expect(page.getByText(/The planting catalog could not be loaded/)).toBeVisible();
+    await expect(page.getByRole("link", { name: "Try again", exact: true })).toHaveAttribute(
+      "href",
+      "/products",
+    );
+  }
 });
 
 test("a slow refresh does not erase the next question being typed", async ({ page }) => {

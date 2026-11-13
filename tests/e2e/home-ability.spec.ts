@@ -13,7 +13,13 @@ test("Home capabilities change their copy without shifting the controls or makin
   await page.evaluate(() => document.fonts.ready);
   const requests: string[] = [];
   page.on("request", (request) => {
-    if (request.resourceType() === "fetch" || request.resourceType() === "xhr")
+    // Scrolling during the layout checks exposes links that Next prefetches in production.
+    if (
+      (request.resourceType() === "fetch" || request.resourceType() === "xhr") &&
+      !(
+        new URL(request.url()).searchParams.has("_rsc") && request.headers()["next-router-prefetch"]
+      )
+    )
       requests.push(request.url());
   });
   for (const width of [360, 390, 768, 1440, 1920]) {
