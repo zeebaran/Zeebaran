@@ -1,5 +1,5 @@
 import { PartnerProfileButton } from "@/components/partners/PartnerProfiles";
-import { institutionalPartners } from "@/features/cms/partner-profiles";
+import { institutionalPartners, strategicPartners } from "@/features/cms/partner-profiles";
 import { PartnerStrip } from "@/components/partners/PartnerStrip";
 import { ContentText } from "@/features/cms/Content";
 import { ContentLink as Link } from "@/features/cms/Content";
@@ -392,6 +392,20 @@ export function PartnerWordmarks() {
         <span className={`${eyebrow} mb-10 block text-center text-green sm:text-left`}>
           <ContentText>Partners</ContentText>
         </span>
+        {strategicPartners.length > 0 && (
+          <ul className="mb-10 flex flex-wrap gap-4">
+            {strategicPartners.map((partner) => (
+              <li key={partner.id}>
+                <PartnerProfileButton
+                  partner={partner}
+                  className="inline-flex items-center gap-2 rounded-full border border-forest/15 bg-white px-4 py-2 text-[0.8125rem] font-semibold text-forest shadow-sm transition-colors hover:bg-cream"
+                >
+                  {partner.name}
+                </PartnerProfileButton>
+              </li>
+            ))}
+          </ul>
+        )}
         <PartnerStrip />
       </div>
     </section>
