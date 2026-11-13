@@ -1,4 +1,14 @@
+import { governanceEditableCopy } from "@/lib/governance-content";
+import { principles } from "@/lib/content";
 import type { FieldDefinition, PageDefinition } from "./model";
+import { SITE } from "@/lib/site";
+import { contactChannels } from "@/features/site/model";
+const sharedContactCopy = new Set([
+  SITE.email,
+  SITE.phone,
+  ...contactChannels.map((entry) => entry[2]),
+  ...SITE.addresses.flatMap((office) => [office.label, office.lines.join(", "), office.note]),
+]);
 
 export const missionHeroCopy = [
   { value: "Work that speaks\n{for itself.}", label: "Hero heading" },
@@ -46,13 +56,24 @@ export function editorDefinition(
         }))
         .filter((field) => !!field.key),
     };
+  // Retain legacy keys in the validation catalog, but expose only copy still rendered on this page.
+  const governanceCopy =
+    page === "governance"
+      ? new Set<string>([
+          "Governance",
+          ...governanceEditableCopy,
+          ...principles.flatMap((p) => [p.t, p.d]),
+        ])
+      : null;
   const fields = new Map<string, FieldDefinition>();
   for (const field of definition.fields) {
+    if (governanceCopy && !governanceCopy.has(field.value)) continue;
     const value = field.value.trim(),
       normalized = visibleText(value);
     if (
       !/[\p{L}\p{N}]/u.test(value) ||
       controls.has(normalized) ||
+      ((page === "site" || page === "contact") && sharedContactCopy.has(value)) ||
       /^ZB-(?:OI|IP|DM|CR)-\d+$/i.test(value) ||
       (page === "mission" && /^\d+$/.test(value)) ||
       (!field.numeric && (/^0\d$/.test(value) || (page === "products" && /^\d+$/.test(value))))

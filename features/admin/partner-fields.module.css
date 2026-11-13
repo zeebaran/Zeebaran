@@ -44,7 +44,7 @@
   grid-template-columns: 1fr 1fr;
   gap: 16px;
 }
-.fields label {
+:is(.fields, .profileGrid) label {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -55,8 +55,7 @@
 .fields label small {
   font-weight: 400;
 }
-.fields input,
-.fields select {
+:is(.fields, .profileGrid) :is(input, select, textarea) {
   width: 100%;
   min-width: 0;
   border: 1px solid #d9dfce;
@@ -68,7 +67,7 @@
     400 14px var(--font-sans),
     sans-serif;
 }
-.fields :is(input, select):focus-visible {
+:is(.fields, .profileGrid) :is(input, select, textarea):focus-visible {
   outline: 2px solid #06642d;
   outline-offset: 2px;
 }
@@ -108,7 +107,7 @@
   .card {
     padding: 16px;
   }
-  .fields :is(input, select) {
+  :is(.fields, .profileGrid) :is(input, select, textarea) {
     font-size: 16px;
   }
 }
@@ -118,4 +117,40 @@
   color: #a34404;
   font-size: 12px;
   line-height: 1.5;
+}
+
+.profileFields {
+  margin-top: 20px;
+  border-top: 1px solid #d9dfce;
+  padding-top: 16px;
+}
+.profileFields summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+.profileGrid {
+  display: grid;
+  gap: 16px;
+  margin-top: 20px;
+}
+.profileGrid label {
+  display: grid;
+  gap: 8px;
+}
+.profileGrid textarea {
+  width: 100%;
+  min-width: 0;
+  resize: vertical;
+}
+.focusRow {
+  display: grid;
+  gap: 12px;
+  border: 1px solid #d9dfce;
+  border-radius: 12px;
+  padding: 16px;
+}
+.focusRow legend {
+  font-size: 11px;
+  padding-inline: 4px;
 }

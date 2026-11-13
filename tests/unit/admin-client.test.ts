@@ -70,3 +70,19 @@ describe("private admin request coalescing", () => {
     await previous;
   });
 });
+
+it("bounds the CSRF handshake and mutation with one shared deadline", async () => {
+  const fetch = vi
+    .fn<typeof globalThis.fetch>()
+    .mockImplementation((url) =>
+      Promise.resolve(
+        Response.json(String(url).endsWith("csrf") ? { token: "token" } : { saved: true }),
+      ),
+    );
+  vi.stubGlobal("fetch", fetch);
+  await adminRequest("/api/admin/content/about", { action: "save" });
+  const csrfSignal = fetch.mock.calls[0][1]?.signal;
+  const saveSignal = fetch.mock.calls[1][1]?.signal;
+  expect(csrfSignal).toBeInstanceOf(AbortSignal);
+  expect(saveSignal).toBe(csrfSignal);
+});

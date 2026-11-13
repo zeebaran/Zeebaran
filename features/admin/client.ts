@@ -24,9 +24,11 @@ export function adminRequest<T>(path: string, body?: unknown, method = "POST"): 
 }
 
 async function request<T>(path: string, body?: unknown, method = "POST"): Promise<T> {
+  // One deadline covers both CSRF and the operation; the initial handshake must not hang indefinitely.
+  const signal = AbortSignal.timeout(45000);
   let headers: Record<string, string> = {};
   if (body !== undefined || method === "DELETE") {
-    const response = await fetch("/api/admin/csrf", { cache: "no-store" });
+    const response = await fetch("/api/admin/csrf", { cache: "no-store", signal });
     if (!response.ok) throw new Error("Refresh the page before trying again.");
     const { token } = await response.json();
     headers = { "Content-Type": "application/json", "x-csrf-token": token };
@@ -35,7 +37,7 @@ async function request<T>(path: string, body?: unknown, method = "POST"): Promis
     method: body === undefined && method !== "DELETE" ? "GET" : method,
     headers,
     body: body === undefined ? undefined : JSON.stringify(body),
-    signal: AbortSignal.timeout(45000),
+    signal,
     cache: "no-store",
   });
   const d = await res.json().catch(() => null);

@@ -37,10 +37,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ page: s
     if (body?.action === "publish") await catalogAccess("publish");
     const record = await mutatePage(page, body, user);
     if (body?.action === "publish") revalidateTag("cms:" + page, { expire: 0 });
-    return Response.json(
-      { record, history: await pageHistory(page) },
-      { headers: { "Cache-Control": "no-store" } },
-    );
+    return Response.json({ record }, { headers: { "Cache-Control": "no-store" } });
   } catch (e) {
     return adminFailure(e);
   }

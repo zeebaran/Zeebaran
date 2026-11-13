@@ -1,4 +1,5 @@
 "use client";
+import { useAdminFeedback } from "./notifications";
 import { MediaThumbnail } from "@/features/media/MediaThumbnail";
 import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import {
@@ -10,6 +11,7 @@ import {
   Search,
   Type,
   Images,
+  ImageOff,
   History,
   Check,
   RotateCcw,
@@ -32,11 +34,17 @@ import {
   type VideoSource,
 } from "@/features/cms/model";
 import { adminRequest, AdminRequestError } from "./client";
+import { sameContent } from "@/features/cms/equal-content";
 const MediaLibrary = dynamic(() => import("./MediaLibrary").then((m) => m.MediaLibrary));
 import { Dialog } from "./Dialog";
 import { MissionVideoFields } from "./MissionVideoFields";
 import { MissionHeroFields } from "./MissionHeroFields";
 import { missionSections } from "@/features/cms/mission-content";
+import { teamIssue } from "@/features/team/schema";
+const TeamFields = dynamic(() => import("@/features/team/TeamFields").then((m) => m.TeamFields));
+const PodcastFields = dynamic(() =>
+  import("@/features/podcast/PodcastFields").then((m) => m.PodcastFields),
+);
 import { partnerIssue } from "@/features/cms/partners";
 import { RegionalHubFields } from "./RegionalHubFields";
 import { regionalHubIssue } from "@/features/cms/regional-hubs";
@@ -86,18 +94,21 @@ export function PageEditor({
     [group, setGroup] = useState("All sections"),
     [query, setQuery] = useState(""),
     [busy, setBusy] = useState(""),
-    [error, setError] = useState(""),
-    [notice, setNotice] = useState(""),
+    [error, setError] = useAdminFeedback("error"),
+    [notice, setNotice] = useAdminFeedback("success"),
     [picker, setPicker] = useState<string | null>(null),
     [confirm, setConfirm] = useState(false);
-  const dirty = useMemo(
-    () => JSON.stringify(content) !== JSON.stringify(record.draft),
-    [content, record.draft],
+  const dirty = useMemo(() => !sameContent(content, record.draft), [content, record.draft]);
+  const needsPublish = useMemo(
+    () => !record.publishedAt || dirty || !sameContent(content, record.published),
+    [content, record.published, record.publishedAt, dirty],
   );
   useEffect(() => {
     if (tab !== "history" || history !== undefined || historyFailed) return;
     let active = true;
-    adminRequest<{ history: Revision[] }>("/api/admin/content/" + page + "?view=history")
+    adminRequest<{ history: Revision[] }>(
+      "/api/admin/content/" + page + "?view=history&revision=" + record.revision,
+    )
       .then((data) => {
         if (active) setHistory(data.history);
       })
@@ -110,9 +121,10 @@ export function PageEditor({
     return () => {
       active = false;
     };
-  }, [tab, history, historyFailed, page]);
+  }, [tab, history, historyFailed, page, record.revision, setError]);
   const historyLoading = tab === "history" && history === undefined && !historyFailed;
   const dirtyRef = useRef(dirty);
+  const mutationPending = useRef(false);
   // Intent-prefetched route snapshots render immediately; revalidate older
   // snapshots privately in the background. Never overwrite edits made meanwhile.
   const currentRecord = useRef(record);
@@ -138,6 +150,7 @@ export function PageEditor({
         setRecord(latest);
         setContent(latest.draft);
         setHistory(undefined);
+        setHistoryFailed(false);
       })
       .catch((error) => {
         if (!active) return;
@@ -152,7 +165,7 @@ export function PageEditor({
     return () => {
       active = false;
     };
-  }, [page, initial, loadedAt, router]);
+  }, [page, initial, loadedAt, router, setError]);
 
   useEffect(() => {
     dirtyRef.current = dirty;
@@ -180,19 +193,40 @@ export function PageEditor({
       document.removeEventListener("click", navigate, true);
     };
   }, []);
-  const pageTabs = tabs.flatMap((item) =>
-    page === "mission" && item.id === "history"
-      ? [{ id: "videos", label: "Video upload", Icon: Film }, item]
-      : page === "partnerships" && item.id === "history"
-        ? [{ id: "partners", label: "Partners", Icon: Users }, item]
-        : page === "contact" && item.id === "history"
-          ? [{ id: "hubs", label: "Regional hubs", Icon: MapPin }, item]
-          : [item],
-  );
+  const pageTabs = tabs
+    .filter((item) => page !== "podcast" || item.id !== "images")
+    .flatMap((item) =>
+      page === "podcast" && item.id === "history"
+        ? [{ id: "episodes", label: "Podcast episodes", Icon: Film }, item]
+        : page === "mission" && item.id === "history"
+          ? [{ id: "videos", label: "Video upload", Icon: Film }, item]
+          : page === "about" && item.id === "history"
+            ? [{ id: "team", label: "Team", Icon: Users }, item]
+            : page === "partnerships" && item.id === "history"
+              ? [{ id: "partners", label: "Partners", Icon: Users }, item]
+              : page === "contact" && item.id === "history"
+                ? [{ id: "hubs", label: "Regional hubs", Icon: MapPin }, item]
+                : [item],
+    );
   const groups = Array.from(new Set(definition.fields.map((f) => f.group)));
   async function mutate(action: "save" | "publish" | "restore", version?: string) {
+    if (
+      mutationPending.current ||
+      (action === "save" && !dirty) ||
+      (action === "publish" && !needsPublish)
+    )
+      return;
     setError("");
     setNotice("");
+    if (action !== "restore" && page === "about" && content.team !== undefined) {
+      const issue = teamIssue(content.team);
+      if (issue) {
+        setError(issue);
+        setConfirm(false);
+        setTab("team");
+        return;
+      }
+    }
     if (action !== "restore" && page === "partnerships" && content.partners !== undefined) {
       const issue = partnerIssue(content.partners);
       if (issue) {
@@ -211,19 +245,19 @@ export function PageEditor({
         return;
       }
     }
+    mutationPending.current = true;
     setBusy(action);
     try {
-      const d = await adminRequest<{ record: PageRecord; history: Revision[] }>(
-        "/api/admin/content/" + page,
-        {
-          action,
-          revision: record.revision,
-          ...(action === "restore" ? { version } : { content }),
-        },
-      );
+      const d = await adminRequest<{ record: PageRecord }>("/api/admin/content/" + page, {
+        action,
+        revision: record.revision,
+        ...(action === "restore" ? { version } : { content }),
+      });
       setRecord(d.record);
       setContent(d.record.draft);
-      setHistory(d.history);
+      currentRecord.current = d.record;
+      setHistory(undefined);
+      setHistoryFailed(false);
       setNotice(
         action === "publish"
           ? "Published. The website now uses this revision."
@@ -240,6 +274,7 @@ export function PageEditor({
           : "The operation could not complete. Your edits are still here.",
       );
     } finally {
+      mutationPending.current = false;
       setBusy("");
     }
   }
@@ -251,7 +286,7 @@ export function PageEditor({
       return next;
     });
   }, []);
-  const image = useCallback((key: string, value: MediaValue) => {
+  const image = useCallback((key: string, value: MediaValue | null) => {
     setContent((old) => ({ ...old, images: { ...old.images, [key]: value } }));
   }, []);
   const resetImage = useCallback((key: string) => {
@@ -324,7 +359,7 @@ export function PageEditor({
           {canPublish && (
             <button
               className="admin-btn admin-primary"
-              disabled={!!busy}
+              disabled={!!busy || !needsPublish}
               onClick={() => setConfirm(true)}
             >
               <Send size={15} />
@@ -349,18 +384,13 @@ export function PageEditor({
         </span>
       </div>
       {error && (
-        <div className="admin-notice admin-notice-error" role="alert">
+        <div className="admin-notice admin-notice-error">
           <AlertCircle size={17} />
           <span>{error}</span>
           <button aria-label="Dismiss error" onClick={() => setError("")}>
             <X size={16} />
           </button>
         </div>
-      )}
-      {notice && (
-        <p className="sr-only" role="status">
-          {notice}
-        </p>
       )}
       <div className="admin-editor-tabs" role="tablist" aria-label="Editing areas">
         {pageTabs.map(({ id, label, Icon }, i) => (
@@ -420,10 +450,22 @@ export function PageEditor({
         </section>
         {tab !== "visual" && (
           <section role="tabpanel" id={"editor-" + tab} aria-labelledby={"editor-tab-" + tab}>
+            {tab === "episodes" && page === "podcast" && (
+              <PodcastFields
+                content={content}
+                onChange={(podcast) => setContent((old) => ({ ...old, podcast }))}
+              />
+            )}
             {tab === "hubs" && page === "contact" && (
               <RegionalHubFields
                 content={content}
                 onChange={(regionalHubs) => setContent((old) => ({ ...old, regionalHubs }))}
+              />
+            )}
+            {tab === "team" && page === "about" && (
+              <TeamFields
+                content={content}
+                onChange={(team) => setContent((old) => ({ ...old, team }))}
               />
             )}
             {tab === "partners" && page === "partnerships" && (
@@ -547,35 +589,45 @@ export function PageEditor({
                 </div>
                 <div className="admin-image-slots">
                   {definition.images.map((slot, i) => {
-                    const value = content.images[slot.key] || { src: slot.src, alt: slot.alt };
+                    const override = content.images[slot.key];
+                    const value =
+                      override === undefined ? { src: slot.src, alt: slot.alt } : override;
                     return (
                       <article className="admin-image-slot" key={slot.key}>
                         <div className="admin-slot-preview">
-                          <MediaThumbnail
-                            width={value.width}
-                            height={value.height}
-                            src={value.src}
-                            alt={value.alt}
-                            loading="lazy"
-                          />
+                          {value && (
+                            <MediaThumbnail
+                              width={value.width}
+                              height={value.height}
+                              src={value.src}
+                              alt={value.alt}
+                              loading="lazy"
+                            />
+                          )}
                           <span>
                             {String(i + 1).padStart(2, "0")} ·{" "}
-                            {content.images[slot.key] ? "Draft replacement" : "Original asset"}
+                            {override === null
+                              ? "Removed from page"
+                              : override
+                                ? "Draft replacement"
+                                : "Original asset"}
                           </span>
                         </div>
                         <div>
                           <small className="admin-eyebrow">{slot.group}</small>
                           <h3>{slot.alt || "Page photograph"}</h3>
-                          <label>
-                            Alternative text
-                            <textarea
-                              rows={2}
-                              value={value.alt}
-                              onChange={(e) => image(slot.key, { ...value, alt: e.target.value })}
-                              maxLength={300}
-                            />
-                          </label>
-                          <div className="admin-slot-actions">
+                          {value && (
+                            <label>
+                              Alternative text
+                              <textarea
+                                rows={2}
+                                value={value.alt}
+                                onChange={(e) => image(slot.key, { ...value, alt: e.target.value })}
+                                maxLength={300}
+                              />
+                            </label>
+                          )}
+                          <div className="admin-slot-actions admin-image-actions">
                             <button
                               className="admin-btn admin-outline"
                               onClick={() => setPicker(slot.key)}
@@ -585,12 +637,21 @@ export function PageEditor({
                             </button>
                             <button
                               className="admin-text-button"
-                              disabled={!content.images[slot.key]}
+                              disabled={override === undefined}
                               onClick={() => resetImage(slot.key)}
                             >
                               <RotateCcw size={13} />
                               Original
                             </button>
+                            {value && (
+                              <button
+                                type="button"
+                                className="admin-text-button"
+                                onClick={() => image(slot.key, null)}
+                              >
+                                <ImageOff size={13} /> Remove from page
+                              </button>
+                            )}
                           </div>
                         </div>
                       </article>
@@ -608,7 +669,8 @@ export function PageEditor({
                   <h2>A careful record.</h2>
                   <p>
                     Restoring a revision creates a draft. The public page changes only when you
-                    publish it.
+                    publish it. The latest 20 revisions and current/previous publication snapshots
+                    are retained.
                   </p>
                 </div>
                 <div className="admin-history">

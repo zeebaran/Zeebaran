@@ -1,4 +1,5 @@
 "use client";
+import { useAdminFeedback, notifyAdmin } from "./notifications";
 import { useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import {
@@ -18,6 +19,7 @@ export type LibraryMedia = {
   alt: string;
   name: string;
   category?: string;
+  state?: "deleting";
 };
 export function MediaUpload({
   kind = "image",
@@ -35,7 +37,7 @@ export function MediaUpload({
   const input = useRef<HTMLInputElement>(null);
   const [alt, setAlt] = useState(""),
     [pending, setPending] = useState(false),
-    [error, setError] = useState("");
+    [error, setError] = useAdminFeedback("error");
   async function upload(file: File) {
     setError("");
     if (file.size > (kind === "image" ? 10 : 100) * 1024 * 1024) {
@@ -74,6 +76,11 @@ export function MediaUpload({
         alt: alt.trim(),
         name: file.name,
       });
+      notifyAdmin(
+        kind === "image"
+          ? "Image uploaded to the media library."
+          : "Video uploaded to the media library.",
+      );
       onUploaded(verified.media);
       setAlt("");
     } catch (e) {
@@ -126,6 +133,7 @@ export function MediaUpload({
         ref={input}
         aria-label={"Upload " + kind}
         type="file"
+        tabIndex={-1}
         accept={
           kind === "image"
             ? "image/jpeg,image/png,image/webp,image/avif"
@@ -139,6 +147,7 @@ export function MediaUpload({
         }}
       />
       <button
+        type="button"
         className="admin-btn admin-outline"
         disabled={pending}
         onClick={() => input.current?.click()}
@@ -146,11 +155,7 @@ export function MediaUpload({
         <UploadCloud size={16} />
         {pending ? "Uploading and verifying…" : "Choose " + kind}
       </button>
-      {error && (
-        <p className="admin-error" role="alert">
-          {error}
-        </p>
-      )}
+      {error && <p className="admin-error">{error}</p>}
       <small>Uploads are signed by the server and verified before entering the library.</small>
     </div>
   );

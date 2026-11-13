@@ -6,6 +6,16 @@ export const partnerFonts = [
   { id: "sans-italic", label: "Bold italic" },
 ] as const;
 export type PartnerFont = (typeof partnerFonts)[number]["id"];
+export type PartnerProfile = {
+  category: string;
+  headline: string;
+  description: string;
+  focusLabel: string;
+  focusAreas: { title: string; description: string }[];
+  commitmentLabel: string;
+  commitment: string;
+  closing: string;
+};
 export type PartnerEntry = {
   id: string;
   name: string;
@@ -14,6 +24,7 @@ export type PartnerEntry = {
   subtitle?: string;
   preset?: "civ" | "fruit-control" | "fiedlin" | "gripple" | "incofin";
   image?: MediaValue;
+  profile?: PartnerProfile;
 };
 export const defaultPartners: PartnerEntry[] = [
   {
@@ -55,7 +66,8 @@ export function isPartnerEntries(value: unknown, allowIncomplete = false): value
     if (
       !record(item) ||
       Object.keys(item).some(
-        (key) => !["id", "name", "mode", "font", "subtitle", "preset", "image"].includes(key),
+        (key) =>
+          !["id", "name", "mode", "font", "subtitle", "preset", "image", "profile"].includes(key),
       ) ||
       typeof item.id !== "string" ||
       !/^[A-Za-z0-9][A-Za-z0-9-]{0,79}$/.test(item.id) ||
@@ -71,6 +83,7 @@ export function isPartnerEntries(value: unknown, allowIncomplete = false): value
         !defaultPartners.some((partner) => partner.preset === item.preset))
     )
       return false;
+    if (item.profile !== undefined && !isPartnerProfile(item.profile)) return false;
     ids.add(item.id);
     if (item.mode === "image") {
       const image = item.image;
@@ -109,4 +122,36 @@ export function partnerIssue(partners: PartnerEntry[]): string | undefined {
       return `Partner ${index + 1}: choose or upload a logo.`;
   }
   if (!isPartnerEntries(partners)) return "Check partner names, fonts, and logo files.";
+}
+
+export function isPartnerProfile(value: unknown): value is PartnerProfile {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const p = value as Record<string, unknown>;
+  const limits = {
+    category: 120,
+    headline: 240,
+    description: 12000,
+    focusLabel: 100,
+    commitmentLabel: 100,
+    commitment: 6000,
+    closing: 800,
+  };
+  if (Object.keys(p).some((key) => key !== "focusAreas" && !(key in limits))) return false;
+  for (const [key, max] of Object.entries(limits))
+    if (typeof p[key] !== "string" || (p[key] as string).length > max) return false;
+  return (
+    Array.isArray(p.focusAreas) &&
+    p.focusAreas.length <= 12 &&
+    p.focusAreas.every((row: unknown) => {
+      if (!row || typeof row !== "object" || Array.isArray(row)) return false;
+      const item = row as Record<string, unknown>;
+      return (
+        Object.keys(item).every((key) => ["title", "description"].includes(key)) &&
+        typeof item.title === "string" &&
+        item.title.length <= 160 &&
+        typeof item.description === "string" &&
+        item.description.length <= 2000
+      );
+    })
+  );
 }

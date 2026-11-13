@@ -114,11 +114,25 @@ export function VisualCanvas({
       y?: number,
     ): { element: HTMLElement; value: VisualSelection; label: string } | null {
       const hubs = target.closest<HTMLElement>("[data-regional-hubs]");
+      const podcast = target.closest<HTMLElement>("[data-podcast-section]");
+      if (page === "podcast" && podcast)
+        return {
+          element: podcast,
+          value: { kind: "podcast", page: "podcast" },
+          label: "Edit podcast episodes",
+        };
       if (page === "contact" && hubs)
         return {
           element: hubs,
           value: { kind: "hubs", page: "contact" },
           label: "Edit regional hubs",
+        };
+      const team = target.closest<HTMLElement>("[data-team-section]");
+      if (page === "about" && team)
+        return {
+          element: team,
+          value: { kind: "team", page: "about" },
+          label: "Edit team profiles",
         };
       const partners = target.closest<HTMLElement>("[data-partner-strip]");
       if (page === "partnerships" && partners)
@@ -277,7 +291,7 @@ export function VisualCanvas({
   }, [page, editing, definition]);
   const overrides = useMemo(() => ({ [page]: content }), [page, content]);
   return (
-    <VisualContentProvider value={overrides}>
+    <VisualContentProvider value={overrides} editing={editing}>
       <div
         ref={root}
         className="visual-canvas-public"

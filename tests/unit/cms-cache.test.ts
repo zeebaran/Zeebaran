@@ -18,6 +18,8 @@ vi.mock("firebase-admin/firestore", () => ({
 vi.mock("../../features/cms/server/store", () => ({ readPage: vi.fn() }));
 vi.mock("../../features/admin/server/security", () => ({ adminSession: vi.fn() }));
 import { publishedContent } from "../../features/cms/server/public";
+import { defaultTeam } from "../../features/team/model";
+import { defaultSettings } from "../../features/site/model";
 beforeEach(() => {
   mock.entries.clear();
   mock.get.mockReset();
@@ -29,6 +31,51 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 describe("published CMS failure recovery", () => {
+  it("reuses the shared site snapshot and exposes only validated public settings", async () => {
+    const settings = defaultSettings();
+    mock.get.mockResolvedValueOnce({
+      data: () => ({
+        published: { text: {}, images: {} },
+        publicSettings: settings,
+        settingsUpdatedBy: "PRIVATE-ACTOR",
+        draft: { text: { private: "UNPUBLISHED" } },
+      }),
+    });
+    const first = await publishedContent("site");
+    expect(first.publicSettings).toEqual(settings);
+    expect(await publishedContent("site")).toEqual(first);
+    expect(mock.get).toHaveBeenCalledTimes(1);
+    expect(JSON.stringify(first)).not.toMatch(/PRIVATE-ACTOR|UNPUBLISHED/);
+  });
+  it("omits hidden team profiles from public snapshots without fetching individual members", async () => {
+    mock.get.mockResolvedValueOnce({
+      data: () => ({
+        published: {
+          text: {},
+          images: {},
+          team: [
+            {
+              ...defaultTeam[0],
+              enabled: false,
+              biography: "HIDDEN-PROFILE-MARKER",
+              phone: "+91 98765 43210",
+            },
+            defaultTeam[1],
+          ],
+        },
+      }),
+    });
+    const snapshot = await publishedContent("about");
+    expect(snapshot.team?.map((member) => member.id)).toEqual(["hilal-sheikh"]);
+    expect(JSON.stringify(snapshot)).not.toContain("HIDDEN-PROFILE-MARKER");
+    expect(mock.get).toHaveBeenCalledTimes(1);
+  });
+  it("does not attach site settings to ordinary page snapshots", async () => {
+    mock.get.mockResolvedValueOnce({
+      data: () => ({ published: { text: {}, images: {} }, publicSettings: defaultSettings() }),
+    });
+    expect((await publishedContent("about")).publicSettings).toBeUndefined();
+  });
   it("does not cache defaults as a successful publication after a transient database failure", async () => {
     mock.get.mockRejectedValueOnce(new Error("temporary outage"));
     const published = { text: { "fixture-heading": "Manually published copy" }, images: {} };

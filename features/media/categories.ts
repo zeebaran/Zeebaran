@@ -12,6 +12,7 @@ export const mediaCategories = [
   ["galleries/home", "Home gallery"],
   ["galleries/field-work", "Field gallery"],
   ["partners", "Partner logos"],
+  ["team", "Team portraits"],
   ["videos", "Videos"],
   ["videos/posters", "Video previews"],
 ] as const;
@@ -20,6 +21,7 @@ export function isMediaCategory(value: unknown): value is MediaCategory {
   return mediaCategories.some(([category]) => category === value);
 }
 export function categoryForEditor(path: string): MediaCategory {
+  if (path.includes("about")) return "team";
   if (path.includes("partnership")) return "partners";
   if (path.includes("rootstock")) return "rootstocks";
   if (path.includes("home")) return "banners/home";

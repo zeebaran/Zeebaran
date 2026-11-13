@@ -7,12 +7,23 @@ import { getFirestore } from "firebase-admin/firestore";
 import { firebase } from "@/lib/firebase-admin";
 import { ContentProvider } from "../Content";
 import { emptyContent, placedContent, type ContentValue } from "../model";
-export function publishedContent(page: string) {
+import { cache } from "react";
+import { resolveSettings } from "@/features/site/server";
+import { SettingsProvider } from "@/features/site/SettingsProvider";
+export const publishedContent = cache(function publishedContent(page: string) {
   return unstable_cache(
     async () => {
       if (!process.env.FIREBASE_PROJECT_ID) return emptyContent();
       const doc = await getFirestore(firebase()).collection("cmsPages").doc(page).get();
-      return placedContent(page, (doc.data()?.published as ContentValue) || emptyContent());
+      const data = doc.data();
+      const content = placedContent(page, (data?.published as ContentValue) || emptyContent());
+      if (page === "podcast" && content.podcast)
+        content.podcast.episodes = content.podcast.episodes.filter((episode) => episode.enabled);
+      if (page === "about" && content.team)
+        content.team = content.team.filter((member) => member.enabled);
+      if (page === "site" && data?.publicSettings)
+        content.publicSettings = resolveSettings(data.publicSettings, content.text);
+      return content;
     },
     [
       "published-cms",
@@ -33,10 +44,12 @@ export function publishedContent(page: string) {
     );
     return emptyContent();
   });
-}
+});
 export async function PageContent({ page, children }: { page: string; children: React.ReactNode }) {
   let content = await publishedContent(page),
     preview = false;
+  const settings = page === "site" ? resolveSettings(content.publicSettings, content.text) : null;
+  const configured = !!content.publicSettings;
   if ((await draftMode()).isEnabled) {
     try {
       await adminSession();
@@ -46,8 +59,9 @@ export async function PageContent({ page, children }: { page: string; children: 
       // A stale preview cookie never exposes draft content without a valid admin session.
     }
   }
-  return (
-    <ContentProvider page={page} value={content}>
+  const cmsValue = settings ? { text: content.text, images: content.images } : content;
+  const rendered = (
+    <ContentProvider page={page} value={cmsValue}>
       {preview && page !== "site" && (
         <div className="cms-preview-banner">
           Draft preview — visible only to you.{" "}
@@ -56,5 +70,12 @@ export async function PageContent({ page, children }: { page: string; children: 
       )}
       {children}
     </ContentProvider>
+  );
+  return settings ? (
+    <SettingsProvider settings={settings} configured={configured}>
+      {rendered}
+    </SettingsProvider>
+  ) : (
+    rendered
   );
 }

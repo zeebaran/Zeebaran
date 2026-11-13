@@ -1,5 +1,10 @@
 "use client";
 import { MediaThumbnail } from "@/features/media/MediaThumbnail";
+import dynamic from "next/dynamic";
+const TeamFields = dynamic(() => import("@/features/team/TeamFields").then((m) => m.TeamFields));
+const PodcastFields = dynamic(() =>
+  import("@/features/podcast/PodcastFields").then((m) => m.PodcastFields),
+);
 import { memo, useEffect, useRef, useState } from "react";
 import { AdminLink as Link } from "@/features/admin/AdminLink";
 import {
@@ -10,6 +15,7 @@ import {
   Hand,
   X,
   Images,
+  ImageOff,
   RotateCcw,
   ArrowUpRight,
   Search,
@@ -40,7 +46,7 @@ export const VisualEditor = memo(function VisualEditor({
   definition: PageDefinition;
   content: ContentValue;
   onText: (key: string, value: string, fallback: string) => void;
-  onImage: (key: string, value: MediaValue) => void;
+  onImage: (key: string, value: MediaValue | null) => void;
   onResetImage: (key: string) => void;
   onChoose: (key: string) => void;
   onContent: (content: ContentValue) => void;
@@ -133,13 +139,23 @@ export const VisualEditor = memo(function VisualEditor({
           (typeof selected.id !== "string" || !/^[a-z0-9-]{1,80}$/.test(selected.id))
         )
           return;
+        if (selected.kind === "team" && (page !== "about" || selected.page !== page)) return;
+        if (selected.kind === "podcast" && (page !== "podcast" || selected.page !== page)) return;
         if (selected.kind === "hubs" && (page !== "contact" || selected.page !== page)) return;
         if (selected.kind === "partners" && (page !== "partnerships" || selected.page !== page))
           return;
         if (
-          !["text", "image", "mission", "partners", "hubs", "catalog", "shared"].includes(
-            selected.kind,
-          )
+          ![
+            "text",
+            "image",
+            "mission",
+            "partners",
+            "hubs",
+            "team",
+            "podcast",
+            "catalog",
+            "shared",
+          ].includes(selected.kind)
         )
           return;
         setSelection(selected);
@@ -192,7 +208,12 @@ export const VisualEditor = memo(function VisualEditor({
     selection?.kind === "image"
       ? definition.images.find((item) => item.key === selection.key)
       : null;
-  const media = image ? content.images[image.key] || { src: image.src, alt: image.alt } : null;
+  const imageOverride = image ? content.images[image.key] : undefined;
+  const media = image
+    ? imageOverride === undefined
+      ? { src: image.src, alt: image.alt }
+      : imageOverride
+    : null;
   return (
     <div className="admin-visual-editor">
       <div className="admin-visual-toolbar">
@@ -233,7 +254,9 @@ export const VisualEditor = memo(function VisualEditor({
                 ...definition.images
                   .filter(
                     (image) =>
-                      (!available || available.includes(image.key)) &&
+                      (!available ||
+                        available.includes(image.key) ||
+                        content.images[image.key] === null) &&
                       ((content.images[image.key]?.alt || image.alt) + image.group)
                         .toLowerCase()
                         .includes(query.toLowerCase()),
@@ -338,9 +361,12 @@ export const VisualEditor = memo(function VisualEditor({
                   : "Edit website content"
           }
           onClose={() => setSelection(null)}
+          trapFocus={selection.kind === "podcast"}
           className={
+            selection.kind === "team" ||
             selection.kind === "mission" ||
             selection.kind === "partners" ||
+            selection.kind === "podcast" ||
             selection.kind === "hubs"
               ? "admin-visual-section-dialog"
               : "admin-visual-inspector"
@@ -376,19 +402,34 @@ export const VisualEditor = memo(function VisualEditor({
               onChange={(value) => onText(field.key, value, field.value)}
             />
           )}
-          {image && media && (
+          {image && (
             <div className="admin-visual-image-edit">
-              <MediaThumbnail width={media.width} height={media.height} src={media.src} alt="" />
-              <label>
-                Image description
-                <textarea
-                  aria-label="Image description"
-                  rows={3}
-                  maxLength={300}
-                  value={media.alt}
-                  onChange={(event) => onImage(image.key, { ...media, alt: event.target.value })}
-                />
-              </label>
+              {media ? (
+                <>
+                  <MediaThumbnail
+                    width={media.width}
+                    height={media.height}
+                    src={media.src}
+                    alt=""
+                  />
+                  <label>
+                    Image description
+                    <textarea
+                      aria-label="Image description"
+                      rows={3}
+                      maxLength={300}
+                      value={media.alt}
+                      onChange={(event) =>
+                        onImage(image.key, { ...media, alt: event.target.value })
+                      }
+                    />
+                  </label>
+                </>
+              ) : (
+                <p className="admin-image-removed" role="status">
+                  Image removed from this page.
+                </p>
+              )}
               <button
                 type="button"
                 className="admin-btn admin-primary"
@@ -399,11 +440,20 @@ export const VisualEditor = memo(function VisualEditor({
               <button
                 type="button"
                 className="admin-text-button"
-                disabled={!content.images[image.key]}
+                disabled={imageOverride === undefined}
                 onClick={() => onResetImage(image.key)}
               >
                 <RotateCcw size={14} /> Use original image
               </button>
+              {media && (
+                <button
+                  type="button"
+                  className="admin-text-button"
+                  onClick={() => onImage(image.key, null)}
+                >
+                  <ImageOff size={14} /> Remove from page
+                </button>
+              )}
             </div>
           )}
           {selection.kind === "hubs" && (
@@ -411,6 +461,9 @@ export const VisualEditor = memo(function VisualEditor({
               content={content}
               onChange={(regionalHubs) => onContent({ ...content, regionalHubs })}
             />
+          )}
+          {selection.kind === "team" && (
+            <TeamFields content={content} onChange={(team) => onContent({ ...content, team })} />
           )}
           {selection.kind === "partners" && (
             <PartnerFields
@@ -459,6 +512,12 @@ export const VisualEditor = memo(function VisualEditor({
                 Edit catalog entry <ArrowUpRight size={15} />
               </Link>
             </>
+          )}
+          {selection.kind === "podcast" && (
+            <PodcastFields
+              content={content}
+              onChange={(podcast) => onContent({ ...content, podcast })}
+            />
           )}
           <div className="admin-visual-inspector-footer">
             <p>Changes stay private until you publish.</p>

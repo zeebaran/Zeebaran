@@ -9,6 +9,7 @@ import {
   partnerLabel,
   type PartnerEntry,
 } from "@/features/cms/partners";
+import { partnerProfile } from "@/features/cms/partner-profiles";
 import { PartnerMark } from "@/components/partners/PartnerMark";
 import { Dialog } from "./Dialog";
 import { MediaLibrary } from "./MediaLibrary";
@@ -185,6 +186,133 @@ export function PartnerFields({
                 </div>
               )}
             </div>
+            <details className={styles.profileFields}>
+              <summary>Partnership profile</summary>
+              {(() => {
+                const profile = partnerProfile(partner);
+                const change = (patch: Partial<typeof profile>) =>
+                  update(partner.id, { profile: { ...profile, ...patch } });
+                return (
+                  <div className={styles.profileGrid}>
+                    <label>
+                      Category
+                      <input
+                        value={profile.category}
+                        maxLength={120}
+                        onChange={(e) => change({ category: e.target.value })}
+                      />
+                    </label>
+                    <label>
+                      Profile heading
+                      <input
+                        value={profile.headline}
+                        maxLength={240}
+                        onChange={(e) => change({ headline: e.target.value })}
+                      />
+                    </label>
+                    <label>
+                      Description
+                      <textarea
+                        rows={6}
+                        value={profile.description}
+                        maxLength={12000}
+                        onChange={(e) => change({ description: e.target.value })}
+                      />
+                    </label>
+                    <label>
+                      Focus section title
+                      <input
+                        value={profile.focusLabel}
+                        maxLength={100}
+                        onChange={(e) => change({ focusLabel: e.target.value })}
+                      />
+                    </label>
+                    {profile.focusAreas.map((area, i) => (
+                      <fieldset key={i} className={styles.focusRow}>
+                        <legend>Focus area {i + 1}</legend>
+                        <label>
+                          Title
+                          <input
+                            value={area.title}
+                            maxLength={160}
+                            onChange={(e) =>
+                              change({
+                                focusAreas: profile.focusAreas.map((a, j) =>
+                                  j === i ? { ...a, title: e.target.value } : a,
+                                ),
+                              })
+                            }
+                          />
+                        </label>
+                        <label>
+                          Details
+                          <textarea
+                            rows={2}
+                            value={area.description}
+                            maxLength={2000}
+                            onChange={(e) =>
+                              change({
+                                focusAreas: profile.focusAreas.map((a, j) =>
+                                  j === i ? { ...a, description: e.target.value } : a,
+                                ),
+                              })
+                            }
+                          />
+                        </label>
+                        <button
+                          type="button"
+                          className="admin-text-button"
+                          onClick={() =>
+                            change({ focusAreas: profile.focusAreas.filter((_, j) => j !== i) })
+                          }
+                        >
+                          Remove focus area {i + 1}
+                        </button>
+                      </fieldset>
+                    ))}
+                    <button
+                      type="button"
+                      className="admin-btn admin-outline"
+                      disabled={profile.focusAreas.length >= 12}
+                      onClick={() =>
+                        change({
+                          focusAreas: [...profile.focusAreas, { title: "", description: "" }],
+                        })
+                      }
+                    >
+                      <Plus size={14} />
+                      Add focus area
+                    </button>
+                    <label>
+                      Commitment section title
+                      <input
+                        value={profile.commitmentLabel}
+                        maxLength={100}
+                        onChange={(e) => change({ commitmentLabel: e.target.value })}
+                      />
+                    </label>
+                    <label>
+                      Commitment or vision
+                      <textarea
+                        rows={5}
+                        value={profile.commitment}
+                        maxLength={6000}
+                        onChange={(e) => change({ commitment: e.target.value })}
+                      />
+                    </label>
+                    <label>
+                      Closing statement
+                      <textarea
+                        rows={3}
+                        value={profile.closing}
+                        maxLength={800}
+                        onChange={(e) => change({ closing: e.target.value })}
+                      />
+                    </label>
+                  </div>
+                );
+              })()}
+            </details>
             {partnerIssue([partner]) && (
               <p className={styles.validation}>
                 {partner.mode === "text"

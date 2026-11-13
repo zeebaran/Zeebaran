@@ -57,3 +57,29 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     return adminFailure(e);
   }
 }
+
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    await csrfGuard(req);
+    const { user } = await catalogAccess("delete");
+    const parsed = z
+      .object({
+        revision: z.number().int().nonnegative(),
+        confirmation: z.string().min(1).max(120),
+      })
+      .strict()
+      .safeParse(await bodyJson(req));
+    if (!parsed.success) throw new AdminError(422, "Confirm the entry name before deletion.");
+    await limitAdmin("catalog-purge-" + user.uid, 60);
+    const id = (await params).id;
+    const { purgeEntry } = await import("@/features/catalog/server/purge");
+    const removed = await purgeEntry(id, parsed.data.revision, parsed.data.confirmation);
+    invalidateCatalog(id, removed.kind);
+    return Response.json(
+      { deleted: true, media: removed.media },
+      { headers: { "Cache-Control": "no-store" } },
+    );
+  } catch (error) {
+    return adminFailure(error);
+  }
+}

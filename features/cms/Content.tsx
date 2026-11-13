@@ -1,5 +1,7 @@
 "use client";
 import NextLink from "next/link";
+import { ImagePlus } from "lucide-react";
+import styles from "./removed-image.module.css";
 import type { ComponentProps } from "react";
 import {
   createContext,
@@ -16,9 +18,16 @@ import { emptyContent, imageKey, textKey, type ContentValue } from "./model";
 import { regionalHubs } from "@/features/contact/hubs-content";
 import { partnerEntries } from "./partners";
 import { missionSections } from "./mission-content";
-import { useVisualContent } from "./visual-context";
+import { useVisualContent, useVisualEditing } from "./visual-context";
+import { emptyPodcast } from "@/features/podcast/model";
+export function usePodcast() {
+  return useContext(ContentContext).value.podcast || emptyPodcast();
+}
 export function useRegionalHubs() {
   return regionalHubs(useContext(ContentContext).value);
+}
+export function useTeamEntries() {
+  return useContext(ContentContext).value.team;
 }
 export function usePartners() {
   return partnerEntries(useContext(ContentContext).value);
@@ -108,19 +117,98 @@ export function ContentSvgText({ children, ...props }: React.SVGProps<SVGTextEle
     </text>
   );
 }
+export function useContentImageOverrides() {
+  return useContext(ContentContext).value.images;
+}
+/** A placement control in the editor only; intentional removals stay invisible publicly. */
+export function RemovedContentImage({
+  source,
+  alt = "",
+  className = "",
+  style,
+  fill,
+  width,
+  height,
+}: {
+  source: string;
+  alt?: string;
+  className?: string;
+  style?: React.CSSProperties;
+  fill?: boolean;
+  width?: number | string;
+  height?: number | string;
+}) {
+  const editing = useVisualEditing();
+  const page = useContentPage();
+  if (!editing) return null;
+  return (
+    <span
+      className={`${styles.placeholder} ${className}`}
+      style={{
+        ...style,
+        ...(fill
+          ? { position: "absolute", inset: 0, width: "100%", height: "100%" }
+          : {
+              aspectRatio:
+                Number(width) > 0 && Number(height) > 0
+                  ? `${Number(width)} / ${Number(height)}`
+                  : "4 / 3",
+            }),
+      }}
+      role="button"
+      tabIndex={0}
+      aria-label={`Add or restore image${alt ? `: ${alt}` : ""}`}
+      data-cms-page={page}
+      data-cms-image={imageKey(source)}
+      data-cms-source={source}
+      data-cms-alt={alt}
+      data-cms-image-removed="true"
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          event.currentTarget.click();
+        }
+      }}
+    >
+      <span className={styles.content}>
+        <ImagePlus size={24} strokeWidth={1.4} aria-hidden="true" />
+        <span>Add or restore image</span>
+      </span>
+    </span>
+  );
+}
 export function useContentImage(src: string, alt = "") {
-  const value = useContext(ContentContext).value.images[imageKey(src)] ?? { src, alt };
-  return { ...authoredAsset(value.src), ...value, src: imageSource(value.src) };
+  const override = useContentImageOverrides()[imageKey(src)];
+  const value = override === null ? { src: "", alt: "" } : (override ?? { src, alt });
+  return {
+    ...authoredAsset(value.src),
+    ...value,
+    src: imageSource(value.src),
+    removed: override === null,
+  };
 }
 export function ContentImage(props: ImageProps) {
   const source = typeof props.src === "string" ? props.src : "";
   const media = useContentImage(source, props.alt);
+  const page = useContentPage();
+  if (media.removed)
+    return (
+      <RemovedContentImage
+        source={source}
+        alt={props.alt}
+        className={props.className}
+        style={props.style}
+        fill={props.fill}
+        width={props.width}
+        height={props.height}
+      />
+    );
   return (
     <AssetImage
       {...props}
       src={media.src}
       alt={props.alt === "" ? "" : media.alt || props.alt}
-      data-cms-page={useContentPage()}
+      data-cms-page={page}
       data-cms-image={source ? imageKey(source) : undefined}
       data-cms-source={source || undefined}
       data-cms-alt={props.alt}
@@ -128,10 +216,9 @@ export function ContentImage(props: ImageProps) {
   );
 }
 export function ContentPicture({ source, children }: { source: string; children: ReactNode }) {
-  const { value } = useContext(ContentContext);
-  const changed =
-    !!value.images[imageKey(source)] &&
-    imageSource(value.images[imageKey(source)].src) !== imageSource(source);
+  const override = useContentImageOverrides()[imageKey(source)];
+  if (override === null) return <RemovedContentImage source={source} fill />;
+  const changed = !!override && imageSource(override.src) !== imageSource(source);
   return (
     <picture className="absolute inset-0">
       {Children.map(children, (child) =>

@@ -11,6 +11,7 @@ import { VisualCanvas } from "@/features/admin/VisualCanvas";
 import Home from "@/app/page";
 import Platform from "@/app/platform/page";
 import Mission from "@/app/mission/page";
+import Podcast from "@/app/podcast/page";
 import Products from "@/app/products/page";
 import Hub from "@/app/zeebaran-hub/page";
 import Innovation from "@/app/innovation/page";
@@ -25,6 +26,7 @@ const pages: Record<string, () => ReactNode | Promise<ReactNode>> = {
   home: Home,
   platform: Platform,
   mission: Mission,
+  podcast: Podcast,
   products: () => Products({ searchParams: Promise.resolve({}) }),
   "zeebaran-hub": Hub,
   innovation: Innovation,

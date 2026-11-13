@@ -1,7 +1,8 @@
 import { requireAdmin } from "@/features/admin/server/require-admin";
+import { catalogRole } from "@/features/catalog/server/access";
 import { MediaLibrary } from "@/features/admin/MediaLibrary";
 export default async function MediaPage() {
-  await requireAdmin();
+  const user = await requireAdmin();
   return (
     <div className="admin-page">
       <div className="admin-page-heading">
@@ -15,7 +16,7 @@ export default async function MediaPage() {
           <p>Upload photographs and films, then choose their place in a page workspace.</p>
         </div>
       </div>
-      <MediaLibrary />
+      <MediaLibrary canDelete={catalogRole(user) === "admin"} />
     </div>
   );
 }

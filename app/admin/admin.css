@@ -104,7 +104,8 @@
   margin-bottom: 8px;
 }
 .admin-root label > input,
-.admin-root label > textarea {
+.admin-root label > textarea,
+.admin-root label > select {
   margin-top: 6px;
   font-weight: 400;
 }
@@ -700,6 +701,23 @@
   font-size: 9px;
   color: #526447;
 }
+.admin-developer-credit {
+  display: block;
+  margin-top: 8px;
+  font-size: 10px;
+  line-height: 1.6;
+  transition: color 0.2s;
+}
+.admin-developer-credit:hover {
+  color: #06642d;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .admin-developer-credit {
+    transition: none;
+  }
+}
 .admin-desk-footer span {
   font-family: var(--font-serif);
   font-style: italic;
@@ -972,6 +990,15 @@
   gap: 10px;
   align-items: center;
   margin-top: 18px;
+}
+.admin-image-actions {
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+.admin-image-removed {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: #526447;
 }
 .admin-slot-actions .admin-btn {
   font-size: 10px;
@@ -1865,4 +1892,89 @@
     appearance: auto;
     background-image: none;
   }
+}
+
+/* The focus ring clears labels without obscuring their text. */
+.admin-root :is(input, textarea, select):focus-visible {
+  outline-offset: 2px;
+}
+.admin-media-preview {
+  display: block;
+  width: 100%;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  text-align: left;
+  color: inherit;
+}
+.admin-media-preview > span {
+  display: block;
+  padding: 16px;
+}
+.admin-media-card .admin-media-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 16px 14px;
+}
+.admin-media-card .admin-media-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 0;
+  border: 0;
+  background: transparent;
+  color: #9f3d21;
+  font-size: 11px;
+}
+.admin-media-card [data-pending="true"] {
+  opacity: 0.65;
+}
+.admin-confirm-dialog .admin-delete-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+.admin-confirm-dialog .admin-danger {
+  background: #9f3d21;
+  color: white;
+  border: 1px solid #9f3d21;
+}
+.admin-confirm-dialog label {
+  margin-top: 20px;
+}
+.admin-confirm-dialog ul {
+  padding-left: 20px;
+  margin: 16px 0;
+}
+.admin-confirm-dialog h2 {
+  margin: 0 0 14px;
+}
+.catalog-trash-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.admin-confirm-dialog .admin-cleanup-choice {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.admin-confirm-dialog .admin-cleanup-choice input {
+  width: 18px;
+  height: 18px;
+  margin: 3px 0 0;
+  flex-shrink: 0;
+}
+/* Global input width must not enlarge the visually hidden upload control. */
+.admin-root input[type="file"].sr-only {
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+}
+.admin-root .admin-media-preview:focus-visible {
+  outline-offset: -3px;
 }

@@ -1,12 +1,16 @@
 import imageManifest from "../media/assets.generated.json" with { type: "json" };
+import type { TeamMember } from "@/features/team/model";
 import type { RegionalHub } from "./regional-hubs";
 import type { PartnerEntry } from "./partners";
 import type { MissionSections } from "./mission-videos";
+import type { SiteSettings } from "@/features/site/model";
+import type { PodcastContent } from "@/features/podcast/model";
 
 export const contentPages = [
   ["home", "Home", "/", "The opening chapter"],
   ["platform", "The Platform", "/platform", "From nursery to market"],
   ["mission", "Our Mission", "/mission", "Installations and field stories"],
+  ["podcast", "Podcast · Bazm-e-Khayal", "/podcast", "Conversations rooted in agriculture"],
   ["products", "Varieties", "/products", "The planting portfolio"],
   ["zeebaran-hub", "Zeebaran Hub", "/zeebaran-hub", "Access, advice and adoption"],
   ["innovation", "Innovation", "/innovation", "Science in the field"],
@@ -15,7 +19,7 @@ export const contentPages = [
   ["governance", "Governance", "/governance", "Responsible stewardship"],
   ["about", "About", "/about", "The institutional story"],
   ["contact", "Contact", "/contact", "Begin a conversation"],
-  ["site", "Site settings", "/", "Navigation and footer"],
+  ["site", "Navigation & footer", "/", "Navigation and footer"],
   ["contact-simple", "Short enquiry", "/contact/simple", "The short contact form"],
 ] as const;
 export type MediaValue = {
@@ -27,11 +31,16 @@ export type MediaValue = {
   height?: number;
 };
 export type ContentValue = {
+  /** Shared public contact settings, attached only by the cached site reader. */
+  publicSettings?: SiteSettings;
   text: Record<string, string>;
-  images: Record<string, MediaValue>;
+  /** Null explicitly removes a placement. An absent key uses the original. */
+  images: Record<string, MediaValue | null>;
   videos?: Record<string, VideoSource>;
   missionSections?: MissionSections;
+  podcast?: PodcastContent;
   partners?: PartnerEntry[];
+  team?: TeamMember[];
   regionalHubs?: RegionalHub[];
   /** Legacy page-wide film. Never rendered; retained only to read older revisions. */
   video?: { kind: "cloudinary" | "youtube"; src: string; title: string; poster?: string };
@@ -43,6 +52,8 @@ export function placedContent(page: string, value: ContentValue): ContentValue {
   return {
     text: value.text,
     images: value.images,
+    ...(page === "podcast" && value.podcast !== undefined ? { podcast: value.podcast } : {}),
+    ...(page === "about" && value.team !== undefined ? { team: value.team } : {}),
     ...(page === "contact" && value.regionalHubs !== undefined
       ? { regionalHubs: value.regionalHubs }
       : {}),

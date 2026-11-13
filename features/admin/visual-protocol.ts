@@ -1,3 +1,4 @@
+import { isTeamMembers } from "@/features/team/schema";
 import { isRegionalHubs } from "@/features/cms/regional-hubs";
 import { isPartnerEntries } from "@/features/cms/partners";
 import type { ContentValue } from "@/features/cms/model";
@@ -9,6 +10,8 @@ export type VisualSelection =
   | { kind: "catalog"; page: string; id: string }
   | { kind: "hubs"; page: "contact" }
   | { kind: "partners"; page: "partnerships" }
+  | { kind: "team"; page: "about" }
+  | { kind: "podcast"; page: "podcast" }
   | { kind: "shared"; page: "site" };
 export type FrameMessage =
   | { channel: typeof visualChannel; page: string; type: "ready" | "synced" }
@@ -52,11 +55,12 @@ export function isVisualContent(value: unknown): value is ContentValue {
   if (
     Object.values(value.images).some(
       (image) =>
-        !record(image) ||
-        typeof image.src !== "string" ||
-        image.src.length > 2000 ||
-        typeof image.alt !== "string" ||
-        image.alt.length > 300,
+        image !== null &&
+        (!record(image) ||
+          typeof image.src !== "string" ||
+          image.src.length > 2000 ||
+          typeof image.alt !== "string" ||
+          image.alt.length > 300),
     )
   )
     return false;
@@ -89,8 +93,33 @@ export function isVisualContent(value: unknown): value is ContentValue {
     )
       return false;
   }
+  if (value.team !== undefined && !isTeamMembers(value.team, true)) return false;
   if (value.regionalHubs !== undefined && !isRegionalHubs(value.regionalHubs, true)) return false;
   if (value.partners !== undefined && !isPartnerEntries(value.partners, true)) return false;
+  if (value.podcast !== undefined) {
+    const podcast = value.podcast;
+    if (
+      !record(podcast) ||
+      typeof podcast.channelUrl !== "string" ||
+      podcast.channelUrl.length > 500 ||
+      !Array.isArray(podcast.episodes) ||
+      podcast.episodes.length > 80 ||
+      podcast.episodes.some(
+        (e) =>
+          !record(e) ||
+          typeof e.id !== "string" ||
+          e.id.length > 80 ||
+          typeof e.enabled !== "boolean" ||
+          ["url", "title", "description", "guest", "topic"].some(
+            (key) =>
+              typeof e[key] !== "string" ||
+              (e[key] as string).length >
+                (key === "description" ? 4000 : key === "url" ? 2000 : 200),
+          ),
+      )
+    )
+      return false;
+  }
   try {
     return JSON.stringify(value).length <= 300000;
   } catch {

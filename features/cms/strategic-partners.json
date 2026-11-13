@@ -1,0 +1,96 @@
+[
+  {
+    "id": "balson",
+    "name": "Balson",
+    "mode": "image",
+    "font": "sans",
+    "profile": {
+      "category": "Irrigation & water management",
+      "headline": "Strategic Partnership with Balson — Advanced Drip Irrigation & Water Management Solutions",
+      "description": "Zeebaran Services Private Limited is an authorised distributor of Balson, a reputed manufacturer of high-quality PVC pipes, drip irrigation systems, and other advanced irrigation solutions.\n\nThrough this strategic partnership, Zeebaran Services aims to bring reliable, efficient, and durable irrigation infrastructure to farmers, orchard developers, and agricultural enterprises across Kashmir.\n\nBalson is recognised for its commitment to product quality, manufacturing standards, and irrigation solutions designed to support efficient water management. By combining Balson's irrigation products with Zeebaran Services' expertise in high-density orchard development and modern horticultural practices, we aim to provide integrated solutions for the evolving needs of the agricultural sector.",
+      "focusLabel": "Our irrigation solutions",
+      "focusAreas": [
+        {
+          "title": "Drip Irrigation Systems",
+          "description": "Efficient water delivery directly to the root zone, helping optimise water utilisation."
+        },
+        {
+          "title": "High-Quality PVC Pipes",
+          "description": "Durable piping solutions for dependable water transportation and distribution."
+        },
+        {
+          "title": "Irrigation Infrastructure",
+          "description": "Essential components and systems for establishing modern orchard irrigation networks."
+        },
+        {
+          "title": "Water Management Solutions",
+          "description": "Systems designed to improve irrigation efficiency and support sustainable agricultural practices."
+        },
+        {
+          "title": "Orchard-Specific Irrigation",
+          "description": "Irrigation solutions suitable for high-density apple orchards and other fruit plantations."
+        }
+      ],
+      "commitmentLabel": "Our commitment",
+      "commitment": "At Zeebaran Services, we believe that efficient water management is fundamental to productive and sustainable horticulture. Our association with Balson reflects our commitment to making quality irrigation products and modern agricultural infrastructure accessible to farmers in Kashmir.\n\nWe strive to go beyond product distribution by supporting growers with suitable irrigation solutions that complement scientific orchard establishment, improve resource utilisation, and contribute to the long-term productivity of their orchards.",
+      "closing": "Zeebaran Services Pvt. Ltd. — Bringing Quality Irrigation Solutions Closer to Farmers."
+    },
+    "image": {
+      "src": "https://res.cloudinary.com/jfiuaflr/image/upload/v1794526651/zeebaran/partners/balson-d980163b901c.png",
+      "publicId": "zeebaran/partners/balson-d980163b901c",
+      "alt": "Balson logo",
+      "resourceType": "image",
+      "width": 250,
+      "height": 112
+    }
+  },
+  {
+    "id": "feno-nursery",
+    "name": "Feno Nursery, Italy",
+    "mode": "image",
+    "font": "sans",
+    "profile": {
+      "category": "International nursery partnership · Italy",
+      "headline": "International Strategic Partnership with Feno Nursery, Italy — Premium Apple Planting Material",
+      "description": "Zeebaran Services Private Limited is proud to have an exclusive partnership with Feno Nursery, Italy, bringing internationally sourced apple planting material and advanced nursery expertise to the Indian horticulture sector.\n\nThrough this international collaboration, Zeebaran Services aims to introduce high-quality apple plants, innovative varieties, and modern fruit-growing solutions to growers across India, particularly in the Kashmir Valley, one of the country's most important apple-producing regions.\n\nFeno Nursery, Italy, represents our international collaboration in accessing quality fruit planting material and expanding opportunities for modern apple cultivation. This partnership reflects our commitment to connecting Indian growers with international nursery expertise, promising apple varieties, and advanced horticultural developments.",
+      "focusLabel": "Our focus areas",
+      "focusAreas": [
+        {
+          "title": "Premium Apple Planting Material",
+          "description": "Bringing quality apple plants sourced through our international nursery partnership."
+        },
+        {
+          "title": "Innovative Apple Varieties",
+          "description": "Exploring and introducing promising apple varieties suited to India's diverse growing conditions."
+        },
+        {
+          "title": "International Nursery Collaboration",
+          "description": "Building a strong connection between Italian nursery expertise and India's horticultural industry."
+        },
+        {
+          "title": "High-Density Orchard Development",
+          "description": "Supporting modern orchard establishment through suitable varieties, rootstocks, planting systems, and scientific horticultural practices."
+        },
+        {
+          "title": "Variety Selection & Evaluation",
+          "description": "Encouraging the selection of apple varieties based on climatic suitability, fruit quality, productivity, and market potential."
+        },
+        {
+          "title": "Grower-Centric Solutions",
+          "description": "Helping farmers access modern planting material and make informed decisions for long-term orchard development."
+        }
+      ],
+      "commitmentLabel": "Our vision",
+      "commitment": "At Zeebaran Services, we believe that the future of Indian horticulture lies in innovation, quality planting material, and international knowledge exchange.\n\nOur exclusive partnership with Feno Nursery, Italy, is an important step towards bringing global nursery standards and modern apple-growing opportunities closer to Indian farmers.\n\nWe are committed to contributing to the transformation of traditional apple cultivation into a more productive, technology-driven, and commercially sustainable horticulture sector.",
+      "closing": "Connecting Italian Nursery Excellence with India's Orchard Future.\n\nZeebaran Services Pvt. Ltd. — We Plant Hope."
+    },
+    "image": {
+      "src": "https://res.cloudinary.com/jfiuaflr/image/upload/v1794526653/zeebaran/partners/feno-nursery-4c623957e271.png",
+      "publicId": "zeebaran/partners/feno-nursery-4c623957e271",
+      "alt": "Feno Nursery, Italy logo",
+      "resourceType": "image",
+      "width": 447,
+      "height": 447
+    }
+  }
+]

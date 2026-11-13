@@ -98,3 +98,32 @@ export async function verifyResource(publicId: string, kind: "image" | "video") 
         : "galleries/field-work",
   };
 }
+
+/** Signed server-side deletion of the original and its derived resources. Safe to retry. */
+export async function destroyResource(publicId: string, kind: "image" | "video") {
+  const c = cloudConfig();
+  const timestamp = Math.floor(Date.now() / 1000);
+  const params = { invalidate: "true", public_id: publicId, timestamp: String(timestamp) };
+  const signature = createHash("sha256")
+    .update(
+      Object.entries(params)
+        .map(([key, value]) => key + "=" + value)
+        .join("&") + c.secret,
+    )
+    .digest("hex");
+  const response = await fetch(
+    "https://api.cloudinary.com/v1_1/" + c.name + "/" + kind + "/destroy",
+    {
+      method: "POST",
+      body: new URLSearchParams({ ...params, api_key: c.key, signature }),
+      cache: "no-store",
+      signal: AbortSignal.timeout(20000),
+    },
+  );
+  const result = await response.json();
+  if (!response.ok || !["ok", "not found"].includes(result.result))
+    throw new AdminError(
+      502,
+      "Cloudinary did not confirm deletion. The file remains in the library for retry.",
+    );
+}

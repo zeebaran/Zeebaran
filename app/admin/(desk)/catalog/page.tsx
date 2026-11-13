@@ -6,7 +6,7 @@ export default async function Page({
 }: {
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
-  await catalogAccess();
+  const { role } = await catalogAccess();
   const params = await searchParams,
     kind = params.kind === "rootstock" ? "rootstock" : "variety",
     deleted = params.deleted === "1";
@@ -15,6 +15,7 @@ export default async function Page({
       key={kind + deleted}
       kind={kind}
       deleted={deleted}
+      canPurge={role === "admin"}
       initial={await adminEntries(kind, deleted)}
     />
   );

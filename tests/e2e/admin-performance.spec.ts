@@ -133,7 +133,7 @@ test("cached workspace snapshots refresh and late responses preserve unsaved edi
     const text = page.locator(".admin-copy-field textarea").first();
     await text.fill("Unsaved local wording");
     release();
-    await expect(page.locator(".admin-notice-error[role=alert]")).toContainText(
+    await expect(page.getByRole("alert").filter({ hasText: "unsaved edits are preserved" })).toContainText(
       "unsaved edits are preserved",
     );
     await expect(text).toHaveValue("Unsaved local wording");
@@ -278,4 +278,68 @@ test("history summaries omit saved bodies while restoration retains the complete
     await batch.commit();
     await deleteApp(app);
   }
+});
+
+test("catalog sidebar follows kind changes and defaults to varieties", async ({ page }) => {
+  await page.goto(origin + "/admin/catalog");
+  const sidebar = page.locator(".admin-sidebar");
+  await expect(
+    sidebar.getByRole("link", { name: "Varieties & products", exact: true }),
+  ).toHaveAttribute("aria-current", "page");
+  await sidebar.getByRole("link", { name: "Rootstock selection", exact: true }).click();
+  await expect(page).toHaveURL(/kind=rootstock/);
+  await expect(
+    sidebar.getByRole("link", { name: "Rootstock selection", exact: true }),
+  ).toHaveAttribute("aria-current", "page");
+  await expect(
+    sidebar.getByRole("link", { name: "Varieties & products", exact: true }),
+  ).not.toHaveAttribute("aria-current", "page");
+  await sidebar.getByRole("link", { name: "Varieties & products", exact: true }).click();
+  await expect(
+    sidebar.getByRole("link", { name: "Varieties & products", exact: true }),
+  ).toHaveAttribute("aria-current", "page");
+  await expect(sidebar.locator('a[aria-current="page"]')).toHaveCount(1);
+});
+
+test("rapid page saves issue one mutation and release the guard after errors", async ({ page }) => {
+  await page.goto(origin + "/admin/pages/about");
+  await page.getByRole("tab", { name: "Words & story", exact: true }).click();
+  const field = page.locator(".admin-copy-field textarea").first();
+  const wording = "An isolated double-save regression fixture " + Date.now() + ".";
+  await field.fill(wording);
+  let requests = 0;
+  let respond: () => Promise<void> = async () => {};
+  let markStarted: () => void = () => {};
+  const started = new Promise<void>((resolve) => {
+    markStarted = resolve;
+  });
+  await page.route("**/api/admin/content/about", async (route) => {
+    if (route.request().method() !== "POST") return route.continue();
+    requests++;
+    await new Promise<void>((resolve) => {
+      respond = async () => {
+        await route.fulfill({ status: 503, json: { error: "Isolated temporary save failure" } });
+        resolve();
+      };
+      markStarted();
+    });
+  });
+  const save = page.getByRole("button", { name: "Save draft", exact: true });
+  await save.evaluate((button) => {
+    (button as HTMLButtonElement).click();
+    (button as HTMLButtonElement).click();
+  });
+  await started;
+  // Both clicks have already run synchronously, before React can disable the control.
+  await expect(page.getByRole("button", { name: "Saving…", exact: true })).toBeDisabled();
+  await respond();
+  await expect(page.locator(".admin-notice-error")).toContainText(
+    "Isolated temporary save failure",
+  );
+  expect(requests).toBe(1);
+  await expect(field).toHaveValue(wording);
+  await page.unroute("**/api/admin/content/about");
+  await save.click();
+  await expect(page.getByRole("status").filter({ hasText: "Draft saved." })).toBeVisible();
+  await expect(page.locator(".admin-notice-error")).toHaveCount(0);
 });

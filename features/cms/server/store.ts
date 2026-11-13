@@ -1,6 +1,13 @@
+import { isTeamMembers, teamIssue, teamSchema } from "@/features/team/schema";
+import type { TeamMember } from "@/features/team/model";
+import { podcastSchema } from "@/features/podcast/schema";
 import { prepareYoutubePoster } from "@/features/media/server-posters";
+import { verifyMediaReferences } from "@/features/media/server/registration";
+import { sameContent } from "../equal-content";
+import { prunePageHistory, retainedPageRevisions } from "./history";
 import { assetId } from "@/features/media/delivery";
 import "server-only";
+import { after } from "next/server";
 import { getFirestore, Timestamp } from "firebase-admin/firestore";
 import { z } from "zod";
 import { isRegionalHubs, regionalHubIssue, type RegionalHub } from "../regional-hubs";
@@ -49,7 +56,7 @@ const missionCards = z
 const input = z
   .object({
     text: z.record(z.string(), z.string().max(12000)),
-    images: z.record(z.string(), media),
+    images: z.record(z.string(), media.nullable()),
     video: z
       .object({
         kind: z.enum(["cloudinary", "youtube"]),
@@ -72,6 +79,9 @@ const input = z
     regionalHubs: z
       .custom<RegionalHub[]>((value) => isRegionalHubs(value), "Invalid regional hubs")
       .optional(),
+    team: z
+      .custom<TeamMember[]>((value) => isTeamMembers(value), "Invalid team profiles")
+      .optional(),
     partners: z
       .custom<PartnerEntry[]>((value) => isPartnerEntries(value), "Invalid partner entries")
       .optional(),
@@ -79,6 +89,7 @@ const input = z
       .object({ orchard: missionCards, process: missionCards, demos: missionCards })
       .strict()
       .optional(),
+    podcast: podcastSchema.optional(),
   })
   .strict();
 export function validPage(page: string) {
@@ -102,6 +113,15 @@ function cloudUrl(value: string, type: "image" | "video") {
 async function validated(page: string, value: unknown) {
   const parsed = input.safeParse(value);
   if (!parsed.success) {
+    if (value && typeof value === "object" && "podcast" in value) {
+      const check = podcastSchema.safeParse(value.podcast);
+      if (!check.success)
+        throw new AdminError(422, check.error.issues[0]?.message || "Check the podcast episodes.");
+    }
+    if (value && typeof value === "object" && "team" in value && Array.isArray(value.team)) {
+      const issue = teamIssue(value.team as TeamMember[]);
+      if (issue) throw new AdminError(422, issue);
+    }
     if (
       value &&
       typeof value === "object" &&
@@ -143,6 +163,9 @@ async function validated(page: string, value: unknown) {
   }
   const result = parsed.data,
     definition = catalog[page];
+  if (result.podcast !== undefined && page !== "podcast")
+    throw new AdminError(422, "Podcast episodes belong to the Podcast page.");
+  for (const episode of result.podcast?.episodes || []) episode.url = youtubeUrl(episode.url)!;
   if (!definition) throw new AdminError(503, "This page's editing catalog is unavailable.");
   const fields = new Map(definition.fields.map((f) => [f.key, f]));
   for (const [key, text] of Object.entries(result.text)) {
@@ -153,11 +176,20 @@ async function validated(page: string, value: unknown) {
   }
   if (result.regionalHubs !== undefined && page !== "contact")
     throw new AdminError(422, "Regional hubs belong to the Contact page.");
-  const db = getFirestore(firebase());
+  // Verify each distinct image once per save, including shared page/team/logo placements.
+  // Keep this request-scoped: registrations are checked afresh on every mutation.
+  const imageChecks = new Map<string, { src: string; message: string }>();
+  function queueImage(publicId: string, src: string, message: string) {
+    const previous = imageChecks.get(publicId);
+    if (previous && previous.src !== src)
+      throw new AdminError(422, "The same image cannot use different source URLs.");
+    imageChecks.set(publicId, { src, message });
+  }
   const images = new Map(definition.images.map((i) => [i.key, i]));
   for (const [key, image] of Object.entries(result.images)) {
     const field = images.get(key);
     if (!field) throw new AdminError(422, "This image does not belong to the page.");
+    if (image === null) continue;
     if (assetId(image.src) === assetId(field.src)) {
       image.src = field.src;
       if (!image.alt.trim()) throw new AdminError(422, "Add alternative text.");
@@ -174,45 +206,38 @@ async function validated(page: string, value: unknown) {
         422,
         "Choose a verified library image and provide its alternative text.",
       );
-    const registered = await db
-      .collection("cmsMedia")
-      .doc(Buffer.from(image.publicId).toString("base64url"))
-      .get();
-    if (
-      !registered.exists ||
-      registered.get("src") !== image.src ||
-      registered.get("resourceType") !== "image"
-    )
-      throw new AdminError(422, "This image has not been verified.");
+    queueImage(image.publicId, image.src, "This image has not been verified.");
+  }
+  if (result.team !== undefined && page !== "about")
+    throw new AdminError(422, "Team profiles belong to the About page.");
+  if (result.team)
+    result.team = teamSchema
+      .parse(result.team)
+      .map((member) => ({ ...member, specialisations: member.specialisations.filter(Boolean) }));
+  for (const member of result.team || []) {
+    if (!member.image) continue;
+    const image = member.image;
+    if (!cloudUrl(image.src, "image") || !image.publicId)
+      throw new AdminError(422, "Choose a verified library portrait.");
+    queueImage(
+      image.publicId,
+      image.src,
+      "A team portrait has not been verified by the media library.",
+    );
   }
   if (result.partners !== undefined && page !== "partnerships")
     throw new AdminError(422, "Partners belong to the Partnerships page.");
-  const partnerImages = new Map<string, NonNullable<PartnerEntry["image"]>>();
   for (const partner of result.partners || []) {
     if (partner.mode !== "image" || !partner.image) continue;
     partner.name = partnerLabel(partner);
     const image = partner.image;
     if (!cloudUrl(image.src, "image") || !image.publicId)
       throw new AdminError(422, "Choose a verified library logo.");
-    const previous = partnerImages.get(image.publicId);
-    if (previous && previous.src !== image.src)
-      throw new AdminError(422, "The same logo asset cannot use different source URLs.");
-    partnerImages.set(image.publicId, image);
-  }
-  if (partnerImages.size) {
-    const entries = [...partnerImages.values()];
-    const registered = await db.getAll(
-      ...entries.map((image) =>
-        db.collection("cmsMedia").doc(Buffer.from(image.publicId!).toString("base64url")),
-      ),
+    queueImage(
+      image.publicId,
+      image.src,
+      "A partner logo has not been verified by the media library.",
     );
-    if (
-      registered.some(
-        (doc, i) =>
-          !doc.exists || doc.get("src") !== entries[i].src || doc.get("resourceType") !== "image",
-      )
-    )
-      throw new AdminError(422, "A partner logo has not been verified by the media library.");
   }
   // Old page-wide films no longer have a placement. Keep old history readable,
   // but never publish or render that obsolete field again.
@@ -246,7 +271,6 @@ async function validated(page: string, value: unknown) {
         title: card.title,
         description: card.description,
       });
-  const verifiedCloudVideos = new Set<string>();
   for (const { video, title, description } of configuredVideos) {
     if (!title.trim() || title.length > 200 || !description.trim())
       throw new AdminError(422, "Add a video title and description to each configured card.");
@@ -254,20 +278,31 @@ async function validated(page: string, value: unknown) {
       const url = youtubeUrl(video.src);
       if (!url) throw new AdminError(422, "Use a valid YouTube video link.");
       video.src = url;
-      await prepareYoutubePoster(url.split("/").at(-1)!);
     } else {
       if (!cloudUrl(video.src, "video"))
         throw new AdminError(422, "Choose a verified library video.");
-      if (verifiedCloudVideos.has(video.src)) continue;
-      const found = await db.collection("cmsMedia").where("src", "==", video.src).limit(1).get();
-      if (found.empty || found.docs[0].get("resourceType") !== "video")
-        throw new AdminError(422, "This video has not been verified.");
-      verifiedCloudVideos.add(video.src);
     }
   }
   if (Buffer.byteLength(JSON.stringify(result)) > 240000)
     throw new AdminError(413, "This page exceeds the content limit.");
   return result as ContentValue;
+}
+function youtubeIds(content: ContentValue) {
+  const videos = [
+    ...(content.podcast?.episodes || []).map((episode) => ({
+      kind: "youtube" as const,
+      src: episode.url,
+    })),
+    ...Object.values(content.videos || {}),
+    ...Object.values(content.missionSections || {})
+      .flat()
+      .map((card) => card.video),
+  ];
+  return new Set(
+    videos
+      .filter((video) => video?.kind === "youtube")
+      .map((video) => video!.src.split("/").at(-1)!),
+  );
 }
 const iso = (value: unknown) => (value instanceof Timestamp ? value.toDate().toISOString() : null);
 export async function readPage(page: string): Promise<PageRecord> {
@@ -285,15 +320,51 @@ export async function readPage(page: string): Promise<PageRecord> {
 }
 export async function pageHistory(page: string) {
   validPage(page);
-  const records = await getFirestore(firebase())
-    .collection("cmsPages")
-    .doc(page)
-    .collection("history")
-    .orderBy("createdAt", "desc")
-    .select("action", "actor", "createdAt", "revision")
-    .limit(20)
-    .get();
-  return records.docs.map((doc) => ({
+  const ref = getFirestore(firebase()).collection("cmsPages").doc(page);
+  const fields = ["action", "actor", "createdAt", "revision"];
+  const [snapshot, records] = await Promise.all([
+    ref.get(),
+    ref
+      .collection("history")
+      .orderBy("revision", "desc")
+      .select(...fields)
+      .limit(retainedPageRevisions)
+      .get(),
+  ]);
+  const rows = [...records.docs];
+  const current = snapshot.data();
+  const publishedId = current?.publishedHistoryId;
+  if (typeof publishedId === "string" && /^[a-f0-9-]{36}$/.test(publishedId)) {
+    if (!rows.some((row) => row.id === publishedId)) {
+      const pinned = await ref
+        .collection("history")
+        .select(...fields)
+        .where("__name__", "==", publishedId)
+        .limit(1)
+        .get();
+      rows.push(...pinned.docs);
+    }
+  }
+  // A previous live publication remains a rollback point after many intervening draft saves.
+  for (const timestamp of [current?.publishedAt, current?.previousPublishedAt]) {
+    if (
+      !(timestamp instanceof Timestamp) ||
+      rows.some((row) => row.get("action") === "publish" && timestamp.isEqual(row.get("createdAt")))
+    )
+      continue;
+    const legacy = await ref
+      .collection("history")
+      .where("createdAt", "==", timestamp)
+      .select(...fields)
+      .limit(2)
+      .get();
+    rows.push(
+      ...legacy.docs.filter(
+        (row) => row.get("action") === "publish" && !rows.some((known) => known.id === row.id),
+      ),
+    );
+  }
+  return rows.map((doc) => ({
     id: doc.id,
     action: doc.get("action"),
     actor: doc.get("actor"),
@@ -328,7 +399,10 @@ export async function mutatePage(
   } else content = await validated(page, request.data.content);
   const { randomUUID } = await import("node:crypto");
   const history = ref.collection("history").doc(randomUUID());
-  await db.runTransaction(async (tx) => {
+  let posters: string[] = [];
+  const committedRevision = await db.runTransaction(async (tx) => {
+    // Match deletion lock order: media first, then the owning content document.
+    await verifyMediaReferences(db, tx, content);
     const existing = await tx.get(ref),
       current = existing.data();
     if ((current?.revision || 0) !== request.data.revision)
@@ -336,6 +410,17 @@ export async function mutatePage(
         409,
         "A newer revision was saved elsewhere. Reload before editing to avoid overwriting it.",
       );
+    const unchangedDraft = sameContent(
+      content,
+      placedContent(page, current?.draft || emptyContent()),
+    );
+    if (
+      unchangedDraft &&
+      (request.data.action !== "publish" ||
+        (current?.publishedAt &&
+          sameContent(content, placedContent(page, current.published || emptyContent()))))
+    )
+      return null;
     if (
       request.data.action !== "restore" &&
       !lockedCopyUnchanged(
@@ -345,6 +430,10 @@ export async function mutatePage(
       )
     )
       throw new AdminError(422, "Only the page's editable text fields can be changed.");
+    const previousVideos = youtubeIds(current?.draft || emptyContent());
+    posters = [...youtubeIds(content)].filter(
+      (id) => request.data.action === "publish" || !previousVideos.has(id),
+    );
     const revision = request.data.revision + 1,
       now = Timestamp.now();
     const update = {
@@ -352,7 +441,16 @@ export async function mutatePage(
       revision,
       updatedAt: now,
       updatedBy: user.uid,
-      ...(request.data.action === "publish" ? { published: content, publishedAt: now } : {}),
+      ...(request.data.action === "publish"
+        ? {
+            published: content,
+            publishedAt: now,
+            publishedHistoryId: history.id,
+            ...(current?.publishedAt instanceof Timestamp
+              ? { previousPublishedAt: current.publishedAt }
+              : {}),
+          }
+        : {}),
     };
     tx.set(ref, update, { mergeFields: Object.keys(update) });
     tx.create(history, {
@@ -369,6 +467,22 @@ export async function mutatePage(
       actor: user.uid,
       createdAt: now,
     });
+    return revision;
   });
+  if (committedRevision !== null && committedRevision > retainedPageRevisions)
+    after(async () => {
+      try {
+        await prunePageHistory(page);
+      } catch {
+        console.error(JSON.stringify({ event: "cms.history_cleanup_failed", page }));
+      }
+    });
+  // Poster delivery is optional. Complete the revision first; provider latency must not block saving.
+  // Changed publications retry missing posters; unchanged submissions schedule no work.
+  if (posters.length)
+    after(async () => {
+      for (let start = 0; start < posters.length; start += 3)
+        await Promise.allSettled(posters.slice(start, start + 3).map(prepareYoutubePoster));
+    });
   return readPage(page);
 }

@@ -1,6 +1,8 @@
 "use client";
+import { useAdminFeedback } from "./notifications";
+import { AdminSnackbar } from "./AdminSnackbar";
 import { AdminLink as Link } from "@/features/admin/AdminLink";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   LayoutDashboard,
@@ -11,6 +13,7 @@ import {
   X,
   ChevronRight,
   Leaf,
+  Settings,
 } from "lucide-react";
 import { contentPages } from "@/features/cms/model";
 import { adminRequest } from "./client";
@@ -24,9 +27,10 @@ export function AdminShell({
   role?: "admin" | "editor";
 }) {
   const router = useRouter();
+  const search = useSearchParams();
   const path = usePathname(),
     [open, setOpen] = useState(false),
-    [error, setError] = useState("");
+    [error, setError] = useAdminFeedback("error");
   useEffect(() => {
     const refresh = () => {
       if (document.visibilityState === "visible") router.refresh();
@@ -38,22 +42,30 @@ export function AdminShell({
       document.removeEventListener("visibilitychange", refresh);
     };
   }, [router]);
+  const isCurrent = (href: string) => {
+    const [pathname, query] = href.split("?");
+    if (path !== pathname) return false;
+    if (!query) return true;
+    const kind = search.get("kind") === "rootstock" ? "rootstock" : "variety";
+    return new URLSearchParams(query).get("kind") === kind;
+  };
   const link = (href: string, label: string, icon?: React.ReactNode) => (
     <Link
       key={href}
       prefetch={false}
       onClick={() => setOpen(false)}
       href={href}
-      className={"admin-side-link " + (path === href ? "is-active" : "")}
-      aria-current={path === href ? "page" : undefined}
+      className={"admin-side-link " + (isCurrent(href) ? "is-active" : "")}
+      aria-current={isCurrent(href) ? "page" : undefined}
     >
       {icon || <span className="admin-page-dot" />}
       <span>{label}</span>
-      {path === href && <ChevronRight size={14} />}
+      {isCurrent(href) && <ChevronRight size={14} />}
     </Link>
   );
   return (
     <div className="admin-workspace">
+      <AdminSnackbar />
       <button
         className="admin-mobile-toggle"
         aria-label={open ? "Close administration menu" : "Open administration menu"}
@@ -81,6 +93,7 @@ export function AdminShell({
           {link("/admin/catalog?kind=variety", "Varieties & products", <Leaf size={17} />)}
           {link("/admin/catalog?kind=rootstock", "Rootstock selection", <Leaf size={17} />)}
           {link("/admin/media", "Media library", <Images size={17} />)}
+          {role === "admin" && link("/admin/settings", "Contact & social", <Settings size={17} />)}
           <p className="admin-nav-label">
             THE WEBSITE <span>{contentPages.length}</span>
           </p>
@@ -112,11 +125,7 @@ export function AdminShell({
             <LogOut size={17} />
           </button>
         </div>
-        {error && (
-          <p role="alert" className="admin-error">
-            {error}
-          </p>
-        )}
+        {error && <p className="admin-error">{error}</p>}
       </aside>
       <main id="main" tabIndex={-1} className="admin-main">
         <header className="admin-topbar">
@@ -129,7 +138,18 @@ export function AdminShell({
         </header>
         {children}
         <footer className="admin-desk-footer">
-          Born in Kashmir. Cultivated with care.<span>Zeebaran editorial desk</span>
+          <div>
+            Born in Kashmir. Cultivated with care.
+            <a
+              className="admin-developer-credit"
+              href="https://www.linkedin.com/in/naveedbhat085/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Designed &amp; Developed by Naveed Mohammad Bhat
+            </a>
+          </div>
+          <span>Zeebaran editorial desk</span>
         </footer>
       </main>
     </div>

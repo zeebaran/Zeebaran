@@ -1,0 +1,105 @@
+.host {
+  position: fixed;
+  inset: auto max(24px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) auto;
+  width: min(440px, calc(100vw - 32px));
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  overflow: visible;
+  z-index: 1000;
+  font-family: var(--font-sans), sans-serif;
+}
+.host:empty {
+  display: none;
+}
+.card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 12px 12px 16px;
+  border: 1px solid #d6e1ce;
+  border-radius: 16px;
+  background: #f9faf5;
+  color: #143d29;
+  box-shadow:
+    0 12px 44px #0b301f26,
+    0 2px 8px #0b301f0a;
+  animation: arrive 260ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #e6efd9;
+  color: #096232;
+}
+.card p {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.card button {
+  display: grid;
+  place-items: center;
+  flex: 0 0 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  transition: background 160ms ease;
+}
+.card button:hover {
+  background: #143d290c;
+}
+.card button:focus-visible {
+  outline: 2px solid #096232;
+  outline-offset: -4px;
+}
+.card[data-tone="error"] {
+  background: #fff7f1;
+  color: #823714;
+  border-color: #edc9b4;
+}
+.card[data-tone="error"] .icon {
+  background: #fbe7da;
+  color: #a44116;
+}
+@keyframes arrive {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (max-width: 600px) {
+  .host {
+    inset: auto 16px max(16px, env(safe-area-inset-bottom)) 16px;
+    width: auto;
+  }
+  .card {
+    gap: 10px;
+    padding-left: 12px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    animation: none;
+  }
+  .card button {
+    transition: none;
+  }
+}
