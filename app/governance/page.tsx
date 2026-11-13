@@ -11,7 +11,7 @@ import { pageMeta } from "@/lib/seo";
 
 export const metadata = pageMeta(
   "Governance",
-  "Oversight, reporting and decision discipline built into how Zeebaran operates.",
+  "Meet the purpose, people and working principles behind Zeebaran. Explore how to contribute as a colleague or team leader.",
   "/governance",
 );
 

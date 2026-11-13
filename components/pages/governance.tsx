@@ -2,7 +2,10 @@ import { ContentText } from "@/features/cms/Content";
 import { ContentLink as Link } from "@/features/cms/Content";
 import { Heading, Reveal, Stagger, Item } from "@/components/Motion";
 import { Photo } from "@/components/Photo";
-import { oversight, metricRules, principles } from "@/lib/content";
+import { principles } from "@/lib/content";
+import { governanceCopy as copy } from "@/lib/governance-content";
+import { TeamIllustration } from "@/components/governance/TeamIllustration";
+import heroStyles from "@/components/governance/governance-hero.module.css";
 
 const eyebrow = "text-eyebrow font-bold uppercase tracking-[0.18em]";
 const arrowLink =
@@ -17,39 +20,46 @@ const sec = "home-wrap";
 export function GovernanceHero() {
   return (
     <section className="home-wrap pb-12 pt-16 sm:pb-20 sm:pt-24">
-      <div className="max-w-4xl">
-        <div className="hero-rise mb-6 flex items-center gap-3">
-          <span className="inline-block h-px w-8 bg-forest/40" />
-          <span className={`${eyebrow} text-green`}>
-            <ContentText>Governance</ContentText>
-          </span>
+      <div className={heroStyles.layout}>
+        <div className={heroStyles.copy}>
+          <div className="hero-rise mb-6 flex items-center gap-3">
+            <span className="inline-block h-px w-8 bg-forest/40" />
+            <span className={`${eyebrow} text-green`}>
+              <ContentText>Governance</ContentText>
+            </span>
+          </div>
+          <Heading
+            as="h1"
+            immediate
+            delay={0.1}
+            tone="leaf"
+            text={copy.hero.title}
+            className="mb-10 text-display text-forest"
+          />
+          <div
+            className="hero-rise max-w-2xl space-y-6 text-lead text-forest/80"
+            style={{ "--d": "0.3s" } as React.CSSProperties}
+          >
+            <p>
+              <ContentText>{copy.hero.body}</ContentText>
+            </p>
+            <p className="pt-2 text-small text-forest/70">
+              <ContentText>{copy.hero.note}</ContentText>
+            </p>
+          </div>
+          <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-4">
+            <Link href="/about#team" className={arrowLink}>
+              <ContentText>{copy.hero.peopleLink}</ContentText>
+              {arrow}
+            </Link>
+            <Link href="/contact?reason=careers#write" className={arrowLink}>
+              <ContentText>{copy.hero.careersLink}</ContentText>
+              {arrow}
+            </Link>
+          </div>
         </div>
-        <Heading
-          as="h1"
-          immediate
-          delay={0.1}
-          tone="leaf"
-          text="Governed like it {intends to last.}"
-          className="mb-10 text-display text-forest"
-        />
-        <div
-          className="hero-rise max-w-2xl space-y-6 text-lead text-forest/80"
-          style={{ "--d": "0.3s" } as React.CSSProperties}
-        >
-          <p>
-            <ContentText>
-              Zeebaran is a professionally governed operating company built for long-term
-              stewardship. Governance is not separate from the work. It shapes how decisions are
-              made, how resources are allocated, how risks are managed, and how accountability is
-              maintained.
-            </ContentText>
-          </p>
-          <p className="pt-2 text-small text-forest/70">
-            <ContentText>
-              Oversight, reporting, and decision discipline are part of the operating system — not
-              an annex to it.
-            </ContentText>
-          </p>
+        <div className={heroStyles.illustration}>
+          <TeamIllustration />
         </div>
       </div>
     </section>
@@ -62,13 +72,13 @@ export function OversightSection() {
       <div className="mb-10">
         <Reveal y={8}>
           <span className={`${eyebrow} mb-3 block text-green`}>
-            <ContentText>Oversight &amp; Reporting</ContentText>
+            <ContentText>{copy.working.eyebrow}</ContentText>
           </span>
         </Reveal>
-        <Heading text="Long-term work {requires scrutiny.}" tone="leaf" className="text-h2" />
+        <Heading text={copy.working.title} tone="leaf" className="text-h2" />
       </div>
       <Stagger className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:gap-8">
-        {oversight.map((o) => (
+        {copy.working.cards.map((o) => (
           <Item key={o.eyebrow}>
             <article className="flex h-full flex-col justify-between rounded-3xl border border-forest/5 bg-white p-8 shadow-sm transition-shadow hover:shadow-md sm:p-10">
               <div>
@@ -98,30 +108,25 @@ export function MetricOwnership() {
           <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12">
             <div className="lg:col-span-7">
               <span className={`${eyebrow} mb-3 block text-green`}>
-                <ContentText>Metric Ownership</ContentText>
+                <ContentText>{copy.responsibilities.eyebrow}</ContentText>
               </span>
               <Heading
-                text="Every number {has a home.}"
+                text={copy.responsibilities.title}
                 tone="leaf"
                 className="mb-6 text-h2 text-forest"
               />
               <div className="max-w-xl space-y-5 text-small text-forest/80">
                 <p>
-                  <ContentText>
-                    Credibility begins with knowing exactly what a number means, where it comes
-                    from, and who is responsible for it.
-                  </ContentText>
+                  <ContentText>{copy.responsibilities.body}</ContentText>
                 </p>
                 <p className="font-bold text-forest">
-                  <ContentText>
-                    Because every number should mean the same thing, wherever it appears.
-                  </ContentText>
+                  <ContentText>{copy.responsibilities.emphasis}</ContentText>
                 </p>
               </div>
               <div className="mt-8">
-                <Link href="/impact" className={arrowLink}>
+                <Link href="/platform" className={arrowLink}>
                   <span>
-                    <ContentText>How we measure</ContentText>
+                    <ContentText>{copy.responsibilities.link}</ContentText>
                   </span>
                   {arrow}
                 </Link>
@@ -130,10 +135,10 @@ export function MetricOwnership() {
             <div className="lg:col-span-5">
               <div className="rounded-2xl border border-forest/10 bg-cream/50 p-6 sm:p-8">
                 <span className="mb-5 block border-b border-forest/10 pb-4 text-[0.6875rem] font-bold uppercase tracking-wider text-forest/75">
-                  <ContentText>Every published figure has</ContentText>
+                  <ContentText>{copy.responsibilities.listTitle}</ContentText>
                 </span>
                 <ul className="space-y-4 text-small font-medium text-forest/90">
-                  {metricRules.map((r) => (
+                  {copy.responsibilities.items.map((r) => (
                     <li key={r} className="flex items-start">
                       <span
                         className="mr-3 mt-2.5 inline-block h-[1.5px] w-3.5 shrink-0 bg-green"
@@ -159,20 +164,12 @@ export function Doctrine() {
     <section className={`${sec} py-12 sm:py-20`}>
       <div className="mb-12 max-w-3xl">
         <span className={`${eyebrow} mb-3 block text-green`}>
-          <ContentText>Doctrine-Based Tests</ContentText>
+          <ContentText>{copy.principles.eyebrow}</ContentText>
         </span>
-        <Heading
-          text="When principles conflict, {the order is explicit.}"
-          tone="leaf"
-          className="mb-6 text-h2 text-forest"
-        />
+        <Heading text={copy.principles.title} tone="leaf" className="mb-6 text-h2 text-forest" />
         <Reveal>
           <p className="text-small text-forest/80">
-            <ContentText>
-              The doctrine is a framework for making decisions. It defines how Zeebaran resolves
-              situations in which two desirable outcomes cannot both be maximised. Its purpose is
-              not to display values, but to guide judgement consistently over time.
-            </ContentText>
+            <ContentText>{copy.principles.body}</ContentText>
           </p>
         </Reveal>
       </div>
@@ -203,34 +200,21 @@ export function RaisingConcerns() {
       <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12 lg:gap-16">
         <div className="space-y-6 lg:col-span-6">
           <span className={`${eyebrow} mb-2 block text-green`}>
-            <ContentText>Raising Concerns</ContentText>
+            <ContentText>{copy.concerns.eyebrow}</ContentText>
           </span>
-          <Heading
-            text="Good institutions need a way {to hear difficult things.}"
-            tone="leaf"
-            className="text-h2 text-forest"
-          />
+          <Heading text={copy.concerns.title} tone="leaf" className="text-h2 text-forest" />
           <Reveal className="space-y-4 text-small text-forest/80">
             <p>
-              <ContentText>
-                Every institution benefits from feedback it would not otherwise receive. Zeebaran
-                provides clear and accessible channels for growers, employees, partners, and other
-                stakeholders to raise concerns, ask difficult questions, and report issues in good
-                faith.
-              </ContentText>
+              <ContentText>{copy.concerns.body}</ContentText>
             </p>
             <p>
-              <ContentText>
-                The purpose is not to eliminate disagreement. It is to ensure that important
-                concerns are heard, considered, and responded to - and that they cannot simply
-                disappear within the institution.
-              </ContentText>
+              <ContentText>{copy.concerns.note}</ContentText>
             </p>
           </Reveal>
           <div className="pt-4">
             <Link href="/contact" className={arrowLink}>
               <span>
-                <ContentText>Raise a concern</ContentText>
+                <ContentText>{copy.concerns.link}</ContentText>
               </span>
               {arrow}
             </Link>
@@ -257,43 +241,36 @@ export function Standard() {
         <div className="flex items-center justify-center rounded-3xl bg-leaf/15 p-6 sm:p-12 md:p-16">
           <div className="w-full max-w-2xl rounded-2xl border border-forest/5 bg-white/60 p-8 text-center shadow-sm sm:p-14">
             <Heading
-              text="The Standard {Zeebaran holds itself to.}"
+              text={copy.invitation.title}
               tone="leaf"
               className="mb-8 text-h2 text-forest"
             />
             <div className="mx-auto mb-10 max-w-lg space-y-5 text-small text-forest/80">
               <p>
-                <ContentText>
-                  Zeebaran&apos;s work should leave people with greater freedom, capability, and
-                  opportunity than it found them. That is the standard against which the institution
-                  should ultimately be judged.
-                </ContentText>
+                <ContentText>{copy.invitation.body}</ContentText>
               </p>
               <p>
-                <ContentText>
-                  The doctrine defines the standard. Governance ensures that Zeebaran continues to
-                  measure itself against it, decision by decision, year after year.
-                </ContentText>
+                <ContentText>{copy.invitation.note}</ContentText>
               </p>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-3 text-[0.8125rem] font-medium sm:gap-4">
               <Link
-                href="/about"
-                className="flex items-center rounded-full bg-green px-6 py-2.5 text-white shadow-sm transition-colors hover:bg-forest"
+                href="/about#team"
+                className="action-motion flex items-center rounded-full bg-green px-6 py-2.5 text-white shadow-sm transition-colors hover:bg-forest"
               >
                 <span>
-                  <ContentText>About Zeebaran</ContentText>
+                  <ContentText>{copy.invitation.peopleLink}</ContentText>
                 </span>
                 <span className="ml-1.5" aria-hidden>
                   <ContentText>→</ContentText>
                 </span>
               </Link>
               <Link
-                href="/contact"
-                className="btn-orange flex items-center rounded-full bg-orange px-6 py-2.5 text-white shadow-sm transition-colors hover:bg-[#e05d00]"
+                href="/contact?reason=careers#write"
+                className="action-motion btn-orange flex items-center rounded-full bg-orange px-6 py-2.5 text-white shadow-sm transition-colors hover:bg-[#e05d00]"
               >
                 <span>
-                  <ContentText>Contact Zeebaran</ContentText>
+                  <ContentText>{copy.invitation.careersLink}</ContentText>
                 </span>
                 <span className="ml-1.5" aria-hidden>
                   <ContentText>→</ContentText>

@@ -1,0 +1,54 @@
+/* Choreograph the original drawing with the same pen rhythm as The Platform. */
+.sketch {
+  --ink-ease: cubic-bezier(0.45, 0, 0.2, 1);
+}
+.sketch path {
+  stroke-dasharray: 1;
+  animation: team-ink 1900ms var(--ink-ease) both;
+}
+.sketch .table {
+  animation-delay: 0ms;
+}
+.sketch .lead {
+  animation-delay: 450ms;
+}
+.sketch .left {
+  animation-delay: 850ms;
+}
+.sketch .right {
+  animation-delay: 1250ms;
+}
+.sketch .hands {
+  animation-delay: 1650ms;
+}
+.sketch .plan {
+  animation-delay: 2100ms;
+}
+.sketch .sapling {
+  animation-delay: 2650ms;
+}
+.sketch .clothing {
+  animation-delay: 2850ms;
+}
+.sketch .detail {
+  animation-delay: 3100ms;
+}
+@keyframes team-ink {
+  from {
+    opacity: 0;
+    stroke-dashoffset: 1;
+  }
+  12% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sketch path {
+    animation: none;
+    stroke-dasharray: none;
+  }
+}
