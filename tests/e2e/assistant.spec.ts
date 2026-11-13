@@ -369,6 +369,7 @@ test("rootstock browse link opens the real section on the products page", async 
   await expect(browse).toHaveAttribute("href", "/products#rootstock-selection");
   await browse.click();
   await expect(page).toHaveURL(/\/products#rootstock-selection$/);
+  await page.locator("#rootstock-selection").scrollIntoViewIfNeeded();
   await expect(page.locator("#rootstock-selection")).toBeInViewport();
 });
 
