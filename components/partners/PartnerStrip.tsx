@@ -1,10 +1,12 @@
 "use client";
 import type { CSSProperties } from "react";
 import { usePartners } from "@/features/cms/Content";
+import { PartnerProfileButton, usePartnerProfileOpen } from "./PartnerProfiles";
 import { PartnerMark } from "./PartnerMark";
 import styles from "./partner-strip.module.css";
 export function PartnerStrip() {
   const partners = usePartners();
+  const profileOpen = usePartnerProfileOpen();
   if (!partners.length) return <div data-partner-strip className={styles.empty} />;
   // A group is at least a viewport wide, and sparse lists are repeated to avoid dead air.
   const count = Math.max(6, partners.length),
@@ -12,6 +14,7 @@ export function PartnerStrip() {
   return (
     <div
       data-partner-strip
+      data-profile-open={profileOpen || undefined}
       className={styles.viewport}
       tabIndex={0}
       aria-label="Partners. Focus or hover to pause scrolling."
@@ -33,7 +36,13 @@ export function PartnerStrip() {
                 aria-hidden={i >= partners.length || undefined}
                 data-partner-id={partner.id}
               >
-                <PartnerMark partner={partner} />
+                <PartnerProfileButton
+                  partner={partner}
+                  className={styles.profileButton}
+                  duplicate={copy === 1 || i >= partners.length}
+                >
+                  <PartnerMark partner={partner} />
+                </PartnerProfileButton>
               </li>
             ))}
           </ul>

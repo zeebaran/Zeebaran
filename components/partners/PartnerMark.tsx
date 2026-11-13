@@ -1,16 +1,22 @@
 import { AssetImage as Image } from "@/features/media/AssetImage";
 import { partnerLabel, type PartnerEntry } from "@/features/cms/partners";
 import styles from "./partner-strip.module.css";
-export function PartnerMark({ partner }: { partner: PartnerEntry }) {
+export function PartnerMark({
+  partner,
+  prominent = false,
+}: {
+  partner: PartnerEntry;
+  prominent?: boolean;
+}) {
   if (partner.mode === "image" && partner.image)
     return (
       <Image
         className={styles.logo}
         src={partner.image.src}
         alt={partnerLabel(partner)}
-        width={144}
-        height={44}
-        sizes="144px"
+        width={prominent ? 460 : 144}
+        height={prominent ? 260 : 44}
+        sizes={prominent ? "230px" : "144px"}
       />
     );
   return (

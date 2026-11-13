@@ -1,3 +1,5 @@
+import { PartnerProfileButton } from "@/components/partners/PartnerProfiles";
+import { institutionalPartners } from "@/features/cms/partner-profiles";
 import { PartnerStrip } from "@/components/partners/PartnerStrip";
 import { ContentText } from "@/features/cms/Content";
 import { ContentLink as Link } from "@/features/cms/Content";
@@ -104,25 +106,30 @@ export function ResearchPartners() {
                 </h3>
                 <ul className="space-y-6">
                   {g.items.map((p) => (
-                    <li key={p.name} className="flex items-center gap-4">
-                      <span
-                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-leaf/30 bg-cream/60 text-[0.6875rem] font-bold text-green"
-                        aria-hidden
+                    <li key={p.name}>
+                      <PartnerProfileButton
+                        partner={institutionalPartners.find((entry) => entry.name === p.name)!}
+                        className="partner-research-button flex w-full items-center gap-4 text-left"
                       >
-                        <ContentText>{p.mark}</ContentText>
-                      </span>
-                      <div>
-                        <h4 className="text-small font-semibold text-forest">
-                          <ContentText>{p.name}</ContentText>
-                        </h4>
-                        <ContentText>
-                          {p.note && (
-                            <p className="text-[0.75rem] text-forest/75">
-                              <ContentText>{p.note}</ContentText>
-                            </p>
-                          )}
-                        </ContentText>
-                      </div>
+                        <span
+                          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-leaf/30 bg-cream/60 text-[0.6875rem] font-bold text-green"
+                          aria-hidden
+                        >
+                          <ContentText>{p.mark}</ContentText>
+                        </span>
+                        <div>
+                          <h4 className="text-small font-semibold text-forest">
+                            <ContentText>{p.name}</ContentText>
+                          </h4>
+                          <ContentText>
+                            {p.note && (
+                              <p className="text-[0.75rem] text-forest/75">
+                                <ContentText>{p.note}</ContentText>
+                              </p>
+                            )}
+                          </ContentText>
+                        </div>
+                      </PartnerProfileButton>
                     </li>
                   ))}
                 </ul>
@@ -423,7 +430,7 @@ export function PartnerCta() {
               <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
                 <Link
                   href="/contact"
-                  className="group inline-flex w-full items-center justify-center rounded-full bg-green px-7 py-3 text-[0.8125rem] font-medium tracking-wide text-white shadow-md transition-colors hover:bg-forest sm:w-auto"
+                  className="action-motion group inline-flex w-full items-center justify-center rounded-full bg-green px-7 py-3 text-[0.8125rem] font-medium tracking-wide text-white shadow-md transition-colors hover:bg-forest sm:w-auto"
                 >
                   <span>
                     <ContentText>Contact Zeebaran</ContentText>
@@ -434,7 +441,7 @@ export function PartnerCta() {
                 </Link>
                 <Link
                   href="/about"
-                  className="group inline-flex w-full items-center justify-center rounded-full bg-[#EDE8DB] px-7 py-3 text-[0.8125rem] font-medium tracking-wide text-forest transition-colors hover:bg-[#E2DDCF] sm:w-auto"
+                  className="action-motion group inline-flex w-full items-center justify-center rounded-full bg-[#EDE8DB] px-7 py-3 text-[0.8125rem] font-medium tracking-wide text-forest transition-colors hover:bg-[#E2DDCF] sm:w-auto"
                 >
                   <span>
                     <ContentText>About Zeebaran</ContentText>

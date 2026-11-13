@@ -1,3 +1,4 @@
+import { PartnerProfiles } from "@/components/partners/PartnerProfiles";
 import { PageContent } from "@/features/cms/server/public";
 import {
   PartnershipsHero,
@@ -20,7 +21,7 @@ export default function Partnerships() {
   return (
     <PageContent page="partnerships">
       {
-        <>
+        <PartnerProfiles>
           <PartnershipsHero />
           <ResearchPartners />
           <TechCapital />
@@ -28,7 +29,7 @@ export default function Partnerships() {
           <HowWeWork />
           <PartnerWordmarks />
           <PartnerCta />
-        </>
+        </PartnerProfiles>
       }
     </PageContent>
   );

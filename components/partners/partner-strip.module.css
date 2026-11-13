@@ -124,6 +124,7 @@
   height: 44px;
   object-fit: contain;
 }
+.viewport[data-profile-open="true"] .track,
 .viewport:hover .track,
 .viewport:focus-within .track {
   animation-play-state: paused;
@@ -149,4 +150,24 @@
   .group li[aria-hidden="true"] {
     display: none;
   }
+}
+.profileButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 154px;
+  min-height: 64px;
+  padding: 8px;
+  border-radius: 12px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  transition: background-color 180ms ease;
+}
+.profileButton:hover {
+  background: #06642d08;
+}
+.profileButton:focus-visible {
+  outline: 2px solid #06642d;
+  outline-offset: -2px;
 }
