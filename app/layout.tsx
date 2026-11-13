@@ -1,11 +1,14 @@
 import { socialImage } from "@/features/media/social";
-import { PageContent } from "@/features/cms/server/public";
+import { PageContent, publishedContent } from "@/features/cms/server/public";
+import { resolveSettings } from "@/features/site/server";
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import localFont from "next/font/local";
 import "./globals.css";
 import "./catalog.css";
+import "./assistant.css";
 import "./field-motion.css";
+import "./action-motion.css";
 import { SiteFrame } from "@/components/SiteFrame";
 import { Providers } from "@/components/Motion";
 import { SITE } from "@/lib/site";
@@ -47,30 +50,41 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "Organization",
-      "@id": `${SITE_URL}/#org`,
-      name: SITE.name,
-      url: SITE_URL,
-      logo: `${SITE_URL}/brand/icon-512.png`,
-      description: SITE.description,
-      email: SITE.email,
-    },
-    {
-      "@type": "WebSite",
-      "@id": `${SITE_URL}/#site`,
-      url: SITE_URL,
-      name: SITE.name,
-      publisher: { "@id": `${SITE_URL}/#org` },
-    },
-  ],
-};
+function organizationData(settings: ReturnType<typeof resolveSettings>) {
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": `${SITE_URL}/#org`,
+        name: SITE.name,
+        url: SITE_URL,
+        logo: `${SITE_URL}/brand/icon-512.png`,
+        description: SITE.description,
+        email: settings.email,
+        telephone: settings.phone,
+        sameAs: Object.values(settings.socials).filter(Boolean),
+        address: settings.addresses.map((office) => ({
+          "@type": "PostalAddress",
+          name: office.label,
+          streetAddress: office.address,
+        })),
+      },
+      {
+        "@type": "WebSite",
+        "@id": `${SITE_URL}/#site`,
+        url: SITE_URL,
+        name: SITE.name,
+        publisher: { "@id": `${SITE_URL}/#org` },
+      },
+    ],
+  };
+}
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const ga = env.NEXT_PUBLIC_GA_ID;
+  const site = await publishedContent("site");
+  const jsonLd = organizationData(resolveSettings(site.publicSettings, site.text));
   return (
     <html data-scroll-behavior="smooth" lang="en" className={`${sans.variable} ${serif.variable}`}>
       <body>

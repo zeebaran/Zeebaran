@@ -7,6 +7,7 @@ const paths = [
   "",
   "/platform",
   "/mission",
+  "/podcast",
   "/products",
   "/zeebaran-hub",
   "/innovation",

@@ -724,3 +724,137 @@
   flex: none;
   opacity: 0.65;
 }
+
+/* Home capabilities: reserve the copy's height so switching never moves the controls. */
+.home-ability-copy,
+.home-ability-quotes {
+  display: grid;
+}
+.home-ability-copy > *,
+.home-ability-quotes > * {
+  grid-area: 1 / 1;
+  min-width: 0;
+}
+.home-ability-copy > [hidden],
+.home-ability-quotes > [hidden] {
+  display: block;
+  visibility: hidden;
+  pointer-events: none;
+}
+.home-ability-panel:not([hidden]),
+.home-ability-quotes > :not([hidden]) {
+  animation: ability-copy-in 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.home-ability-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 28px;
+}
+.home-ability-controls button {
+  border: 1px solid rgb(6 100 45 / 0.2);
+  border-radius: 8px;
+  background: white;
+  color: var(--forest);
+  padding: 8px 12px;
+  font-family: inherit;
+  font-size: 0.65625rem;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: 0.015em;
+  cursor: pointer;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease;
+}
+.home-ability-controls button:hover {
+  border-color: var(--green);
+  background: #f0f5e9;
+}
+.home-ability-controls button[aria-selected="true"] {
+  background: #fe6901;
+  border-color: #fe6901;
+  color: #fff;
+}
+.home-ability-controls button:focus-visible {
+  outline-offset: 3px;
+}
+.home-ability-quotes {
+  margin-top: 24px;
+}
+@keyframes ability-copy-in {
+  from {
+    opacity: 0.55;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.himalayas-marker-ripple,
+.himalayas-marker-breath {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.himalayas-marker-ripple {
+  animation: himalayas-ripple 3.2s cubic-bezier(0.22, 0.61, 0.36, 1) infinite;
+}
+.himalayas-marker-breath {
+  animation: himalayas-breath 3.2s ease-in-out infinite;
+}
+@keyframes himalayas-ripple {
+  0% {
+    transform: scale(0.55);
+    opacity: 0.9;
+  }
+  75%,
+  100% {
+    transform: scale(1.55);
+    opacity: 0;
+  }
+}
+@keyframes himalayas-breath {
+  0%,
+  100% {
+    transform: scale(0.9);
+    opacity: 0.65;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-ability-panel:not([hidden]),
+  .home-ability-quotes > :not([hidden]),
+  .himalayas-marker-ripple,
+  .himalayas-marker-breath {
+    animation: none;
+  }
+}
+
+.himalayas-location-dot {
+  animation: himalayas-breath 3.2s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .himalayas-location-dot {
+    animation: none;
+  }
+}
+.partner-research-button {
+  padding: 8px;
+  margin: -8px;
+  border-radius: 12px;
+  background: transparent;
+  cursor: pointer;
+  transition: background-color 180ms ease;
+}
+.partner-research-button:hover {
+  background: #06642d06;
+}
+.partner-research-button:focus-visible {
+  outline: 2px solid #06642d;
+  outline-offset: 3px;
+}

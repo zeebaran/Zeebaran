@@ -27,7 +27,7 @@ export function Button({
   arrow = "right",
 }: BtnProps) {
   const base =
-    "group inline-flex items-center gap-2 rounded-full px-6 py-3 text-[0.8125rem] font-semibold tracking-wide transition duration-300 ease-out active:scale-[0.98]";
+    "action-motion group inline-flex items-center gap-2 rounded-full px-6 py-3 text-[0.8125rem] font-semibold tracking-wide transition duration-300 ease-out active:scale-[0.98]";
   const v = {
     primary: "bg-green text-white hover:bg-forest",
     orange: "bg-orange text-white hover:bg-[#ff8230]",

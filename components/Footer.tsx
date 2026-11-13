@@ -1,8 +1,11 @@
-import { ContentMailLink } from "@/features/cms/Content";
+"use client";
 import { ContentText } from "@/features/cms/Content";
 import { ContentLink as Link } from "@/features/cms/Content";
 import { Logo } from "./Logo";
 import { FOOTER, SITE } from "@/lib/site";
+import { useSiteSettings } from "@/features/site/SettingsProvider";
+import { SocialLinks } from "@/features/site/SocialLinks";
+import { phoneDigits } from "@/features/site/model";
 
 function Col({
   title,
@@ -38,6 +41,11 @@ function Col({
 }
 
 export function Footer({ preview = false }: { preview?: boolean } = {}) {
+  const { settings } = useSiteSettings();
+  const addresses = settings.footer.addresses
+    ? settings.addresses.filter((address) => address.showInFooter)
+    : [];
+  const hasContact = settings.footer.email || settings.footer.phone || addresses.length > 0;
   return (
     <footer id="footer" className="border-t border-leaf/20 bg-forest pb-12 pt-16 text-white">
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -56,39 +64,56 @@ export function Footer({ preview = false }: { preview?: boolean } = {}) {
                 capability.&rdquo;
               </ContentText>
             </p>
+            <SocialLinks />
           </div>
-          <Col preview={preview} title="Explore" links={FOOTER.explore} span="lg:col-span-2" />
-          <Col preview={preview} title="Company" links={FOOTER.company} span="lg:col-span-2" />
-          <div className="space-y-3 lg:col-span-3">
-            <h3 className="text-eyebrow font-bold uppercase tracking-[0.18em] !text-leaf">
-              <ContentText>Contact</ContentText>
-            </h3>
-            <div className="space-y-3 pt-1 text-small text-white/80">
-              <div>
-                <span className="block font-bold text-white">
-                  <ContentText>Email</ContentText>
-                </span>
-                <ContentMailLink
-                  className="text-leaf hover:underline"
-                  href={`mailto:${SITE.email}`}
-                >
-                  <ContentText>{SITE.email}</ContentText>
-                </ContentMailLink>
-              </div>
-              <ContentText>
-                {SITE.addresses.map((a) => (
-                  <div key={a.label}>
+          <Col
+            preview={preview}
+            title="Explore"
+            links={FOOTER.explore}
+            span={hasContact ? "lg:col-span-2" : "lg:col-span-3"}
+          />
+          <Col
+            preview={preview}
+            title="Company"
+            links={FOOTER.company}
+            span={hasContact ? "lg:col-span-2" : "lg:col-span-4"}
+          />
+          {hasContact && (
+            <div className="space-y-3 lg:col-span-3">
+              <h3 className="text-eyebrow font-bold uppercase tracking-[0.18em] !text-leaf">
+                <ContentText>Contact</ContentText>
+              </h3>
+              <div className="space-y-3 pt-1 text-small text-white/80">
+                {settings.footer.email && (
+                  <div>
                     <span className="block font-bold text-white">
-                      <ContentText>{a.label}</ContentText>
+                      <ContentText>Email</ContentText>
                     </span>
-                    <p className="text-white/70">
-                      <ContentText>{a.lines.join(", ")}</ContentText>
-                    </p>
+                    <a className="text-leaf hover:underline" href={`mailto:${settings.email}`}>
+                      {settings.email}
+                    </a>
+                  </div>
+                )}
+                {settings.footer.phone && (
+                  <div>
+                    <span className="block font-bold text-white">Phone</span>
+                    <a
+                      className="text-white/70 hover:text-white"
+                      href={"tel:+" + phoneDigits(settings.phone)}
+                    >
+                      {settings.phone}
+                    </a>
+                  </div>
+                )}
+                {addresses.map((a) => (
+                  <div key={a.id}>
+                    <span className="block font-bold text-white">{a.label}</span>
+                    <p className="text-white/70">{a.address}</p>
                   </div>
                 ))}
-              </ContentText>
+              </div>
             </div>
-          </div>
+          )}
         </div>
         <div className="flex flex-col items-center justify-between gap-4 pt-8 text-[0.75rem] text-white/70 sm:flex-row">
           <div>
@@ -102,6 +127,16 @@ export function Footer({ preview = false }: { preview?: boolean } = {}) {
           <div>
             <ContentText>Born in Kashmir &middot; Growing across the Himalayas</ContentText>
           </div>
+        </div>
+        <div className="mt-5 text-center text-[0.6875rem] leading-relaxed text-white/60">
+          <a
+            href="https://www.linkedin.com/in/naveedbhat085/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-sm transition-colors hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-leaf"
+          >
+            Designed &amp; Developed by Naveed Mohammad Bhat
+          </a>
         </div>
       </div>
     </footer>
