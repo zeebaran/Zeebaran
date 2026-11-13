@@ -61,8 +61,8 @@ describe("central media delivery", () => {
     }
   });
   it("keeps OG and brand identity local and outside photographic migrations", async () => {
-    expect(socialImage.url).toBe("/opengraph-image.jpg");
-    expect(existsSync(new URL("../../app/opengraph-image.jpg", import.meta.url))).toBe(true);
+    expect(socialImage.url).toBe("/images/OG.webp");
+    expect(existsSync(new URL("../../public/images/OG.webp", import.meta.url))).toBe(true);
     expect(
       Object.values(authoredAssets).every((asset) => asset.legacySource.startsWith("/images/")),
     ).toBe(true);
