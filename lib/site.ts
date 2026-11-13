@@ -25,12 +25,16 @@ export const NAV = [
   { href: "/products", label: "Varieties" },
   { href: "/zeebaran-hub", label: "Zeebaran Hub" },
   { href: "/innovation", label: "Innovation" },
-  { href: "/impact", label: "Impact" },
+  { href: "/mission", label: "Our Mission" },
   { href: "/partnerships", label: "Partnerships" },
-  { href: "/governance", label: "Governance" },
+  { href: "/podcast", label: "Podcast" },
   { href: "/about", label: "About" },
 ] as const;
 
+export const ABOUT_LINKS = [
+  { href: "/governance", label: "Governance" },
+  { href: "/impact", label: "Impact" },
+] as const;
 export const FOOTER = {
   explore: [
     { href: "/platform", label: "The Platform" },
@@ -38,6 +42,7 @@ export const FOOTER = {
     { href: "/zeebaran-hub", label: "Zeebaran Hub" },
     { href: "/innovation", label: "Innovation" },
     { href: "/impact", label: "Impact & Numbers" },
+    { href: "/podcast", label: "Bazm-e-Khayal · Podcast" },
   ],
   company: [
     { href: "/about", label: "About Us" },

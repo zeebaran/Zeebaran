@@ -340,7 +340,7 @@ export function EvidenceCta() {
           <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link
               href="/partnerships"
-              className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-green px-6 py-3 text-[0.8125rem] font-semibold text-white shadow-sm transition-colors hover:bg-forest sm:w-auto"
+              className="action-motion inline-flex w-full items-center justify-center gap-2 rounded-full bg-green px-6 py-3 text-[0.8125rem] font-semibold text-white shadow-sm transition-colors hover:bg-forest sm:w-auto"
             >
               <ContentText>Explore partnership </ContentText>
               <span aria-hidden>
@@ -349,7 +349,7 @@ export function EvidenceCta() {
             </Link>
             <Link
               href="/contact"
-              className="btn-orange inline-flex w-full items-center justify-center gap-2 rounded-full bg-orange px-6 py-3 text-[0.8125rem] font-semibold text-white shadow-sm transition-colors hover:bg-[#e05d00] sm:w-auto"
+              className="action-motion btn-orange inline-flex w-full items-center justify-center gap-2 rounded-full bg-orange px-6 py-3 text-[0.8125rem] font-semibold text-white shadow-sm transition-colors hover:bg-[#e05d00] sm:w-auto"
             >
               <ContentText>Contact Zeebaran </ContentText>
               <span aria-hidden>

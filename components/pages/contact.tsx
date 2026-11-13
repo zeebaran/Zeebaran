@@ -1,4 +1,9 @@
-import { ContentMailLink } from "@/features/cms/Content";
+import {
+  DeskEmailLink,
+  OfficeAddresses,
+  SiteEmailLink,
+  SitePhoneLink,
+} from "@/features/site/ContactDetails";
 import { ContentText } from "@/features/cms/Content";
 import { RegionMap, RegionalHubReference } from "@/features/contact/RegionMap";
 import { RegionalHubDisplay, RegionalHubCount } from "@/features/contact/RegionalHubDisplay";
@@ -7,7 +12,6 @@ import { ArrowRight } from "lucide-react";
 import { Heading, Reveal, Stagger, Item } from "@/components/Motion";
 import { Photo } from "@/components/Photo";
 import { conversations, firstMessage } from "@/lib/content";
-import { SITE } from "@/lib/site";
 import type { CSSProperties } from "react";
 import { ContactIllustration } from "@/components/contact/ContactIllustration";
 import heroStyles from "@/components/contact/contact-hero.module.css";
@@ -118,12 +122,10 @@ export function Channels() {
                     <ContentText>{c.cta}</ContentText>
                     <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-1" />
                   </Link>
-                  <ContentMailLink
+                  <DeskEmailLink
                     className="font-mono text-[0.6875rem] text-forest/75 underline-offset-4 hover:underline"
-                    href={`mailto:${c.mail}`}
-                  >
-                    <ContentText>{c.mail}</ContentText>
-                  </ContentMailLink>
+                    channel={c.reason}
+                  />
                 </div>
               </article>
             </Item>
@@ -149,29 +151,10 @@ export function Channels() {
                       <ContentText>Email</ContentText>
                     </dt>
                     <dd>
-                      <ContentMailLink
-                        className="font-semibold text-green underline-offset-4 hover:underline"
-                        href={`mailto:${SITE.email}`}
-                      >
-                        <ContentText>{SITE.email}</ContentText>
-                      </ContentMailLink>
+                      <SiteEmailLink className="font-semibold text-green underline-offset-4 hover:underline" />
                     </dd>
                   </div>
-                  {SITE.addresses.map((a) => (
-                    <div className="kv" key={a.label}>
-                      <dt>
-                        <ContentText>{a.label}</ContentText>
-                      </dt>
-                      <dd>
-                        <span className="block font-medium text-forest">
-                          <ContentText>{a.lines.join(", ")}</ContentText>
-                        </span>
-                        <span className="mt-0.5 block text-[0.75rem] text-forest/75">
-                          <ContentText>{a.note}</ContentText>
-                        </span>
-                      </dd>
-                    </div>
-                  ))}
+                  <OfficeAddresses />
                 </dl>
               </div>
               <div className="mt-6 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-t border-line pt-3">
@@ -179,7 +162,7 @@ export function Channels() {
                   <span aria-hidden className="size-2 rounded-full bg-orange" />
                   <ContentText>Emergency grower desk: </ContentText>
                   <strong className="text-forest">
-                    <ContentText>{SITE.phone}</ContentText>
+                    <SitePhoneLink />
                   </strong>
                 </span>
                 <a

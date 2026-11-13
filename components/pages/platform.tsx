@@ -380,7 +380,7 @@ export function PlatformCta() {
               <div className="flex flex-wrap items-center justify-center gap-3">
                 <Link
                   href="/partnerships"
-                  className="inline-flex items-center gap-1.5 rounded-full bg-green px-5 py-2.5 text-[0.8125rem] font-medium text-white shadow-sm transition hover:bg-forest"
+                  className="action-motion inline-flex items-center gap-1.5 rounded-full bg-green px-5 py-2.5 text-[0.8125rem] font-medium text-white shadow-sm transition hover:bg-forest"
                 >
                   <ContentText>Explore partnership </ContentText>
                   <span aria-hidden>
@@ -389,7 +389,7 @@ export function PlatformCta() {
                 </Link>
                 <Link
                   href="/contact"
-                  className="inline-flex items-center gap-1.5 rounded-full border border-forest/30 bg-transparent px-5 py-2.5 text-[0.8125rem] font-medium text-forest transition hover:bg-black/5"
+                  className="action-motion inline-flex items-center gap-1.5 rounded-full border border-forest/30 bg-transparent px-5 py-2.5 text-[0.8125rem] font-medium text-forest transition hover:bg-black/5"
                 >
                   <ContentText>Contact Zeebaran </ContentText>
                   <span aria-hidden>

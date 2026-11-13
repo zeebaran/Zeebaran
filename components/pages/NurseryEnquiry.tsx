@@ -6,12 +6,16 @@ import { useState } from "react";
 import { Check, MessageCircle } from "lucide-react";
 import { Reveal } from "@/components/Motion";
 import type { Product } from "@/features/catalog/model";
-import { nurseryEnquiry, whatsappAvailable } from "@/lib/nursery-enquiry";
+import { nurseryEnquiry } from "@/lib/nursery-enquiry";
+import { useSiteSettings } from "@/features/site/SettingsProvider";
+import { hasWhatsApp } from "@/features/site/model";
 /* ─── WhatsApp rootstock selector ─────────────────────────────────────────── */
 export function NurseryEnquiry({ product }: { product: Pick<Product, "name" | "rootstocks"> }) {
   const [selected, setSelected] = useState<string>("");
 
-  const link = nurseryEnquiry(product.name, selected || undefined);
+  const { settings } = useSiteSettings();
+  const whatsappAvailable = hasWhatsApp(settings.whatsapp);
+  const link = nurseryEnquiry(product.name, selected || undefined, settings.whatsapp);
 
   return (
     <div className="rounded-2xl border border-line bg-cream/60 p-5 sm:p-8">
@@ -86,7 +90,7 @@ export function NurseryEnquiry({ product }: { product: Pick<Product, "name" | "r
         href={link}
         target={whatsappAvailable ? "_blank" : undefined}
         rel={whatsappAvailable ? "noopener noreferrer" : undefined}
-        className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-green px-6 py-3.5 text-[0.875rem] font-semibold text-white shadow transition hover:bg-forest active:scale-[0.98]"
+        className="action-motion mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-green px-6 py-3.5 text-[0.875rem] font-semibold text-white shadow transition hover:bg-forest active:scale-[0.98]"
         aria-label={`Enquire about ${product.name}${selected ? ` on ${selected}` : ""} `}
       >
         <MessageCircle className="size-4 shrink-0" aria-hidden />

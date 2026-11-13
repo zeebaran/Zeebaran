@@ -391,7 +391,7 @@ export function Callout() {
               <div className="flex flex-wrap items-center justify-center gap-3">
                 <Link
                   href="/partnerships"
-                  className="inline-flex items-center gap-2 rounded-full bg-green px-6 py-2.5 text-[0.8125rem] font-semibold text-white shadow-sm transition-colors hover:bg-forest"
+                  className="action-motion inline-flex items-center gap-2 rounded-full bg-green px-6 py-2.5 text-[0.8125rem] font-semibold text-white shadow-sm transition-colors hover:bg-forest"
                 >
                   <ContentText>Explore partnership </ContentText>
                   <span aria-hidden>
@@ -400,7 +400,7 @@ export function Callout() {
                 </Link>
                 <Link
                   href="/contact"
-                  className="btn-orange inline-flex items-center gap-2 rounded-full bg-orange px-6 py-2.5 text-[0.8125rem] font-semibold text-white shadow-sm transition-colors hover:bg-[#e05d00]"
+                  className="action-motion btn-orange inline-flex items-center gap-2 rounded-full bg-orange px-6 py-2.5 text-[0.8125rem] font-semibold text-white shadow-sm transition-colors hover:bg-[#e05d00]"
                 >
                   <ContentText>Contact Zeebaran </ContentText>
                   <span aria-hidden>

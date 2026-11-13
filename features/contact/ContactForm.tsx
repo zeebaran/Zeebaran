@@ -1,5 +1,5 @@
 "use client";
-import { ContentMailLink } from "@/features/cms/Content";
+import { SiteEmailLink, useContactDetails } from "@/features/site/ContactDetails";
 import { Suspense, useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useSearchParams } from "next/navigation";
 import { useForm, useWatch, type FieldErrors, type Resolver } from "react-hook-form";
@@ -15,7 +15,6 @@ import {
   type FormFields,
   type Submission,
 } from "./schema";
-import { SITE } from "@/lib/site";
 import { ContentText, useContentPage, useContentStrings } from "@/features/cms/Content";
 import { textKey } from "@/features/cms/model";
 import { sendWeb3Forms, web3formsEnabled } from "./web3forms";
@@ -120,6 +119,7 @@ async function upload(file: File, id: string) {
   return { name: file.name, size: file.size, ticket };
 }
 export function ContactForm({ simple = false }: { simple?: boolean }) {
+  const contact = useContactDetails();
   const copy = useContentStrings(),
     contentPage = useContentPage(),
     useWeb3Forms = web3formsEnabled();
@@ -155,6 +155,7 @@ export function ContactForm({ simple = false }: { simple?: boolean }) {
   );
   const fileInput = useRef<HTMLInputElement>(null);
   const form = useRef<HTMLFormElement>(null);
+  const submitting = useRef(false);
   const successHeading = useRef<HTMLHeadingElement>(null);
   const selectReason = useCallback(
     (reason: FormFields["reason"]) => {
@@ -244,7 +245,7 @@ export function ContactForm({ simple = false }: { simple?: boolean }) {
     const values = getValues();
     return (
       "mailto:" +
-      SITE.email +
+      contact.email +
       "?subject=" +
       encodeURIComponent(
         "Zeebaran · " + (directory.find((d) => d.id === values.reason)?.title || "Enquiry"),
@@ -313,20 +314,22 @@ export function ContactForm({ simple = false }: { simple?: boolean }) {
           method="post"
           action="/api/enquiries"
           onSubmit={(event) => {
-            if (!hydrated || isSubmitting || fileError || workingFile) {
+            if (!hydrated || submitting.current || isSubmitting || fileError || workingFile) {
               event.preventDefault();
               return;
             }
             const website = String(new FormData(event.currentTarget).get("website") || "");
-            void handleSubmit((values) => send(values, website))(event);
+            submitting.current = true;
+            void handleSubmit((values) => send(values, website))(event).finally(() => {
+              submitting.current = false;
+            });
           }}
           noValidate
           aria-label="Zeebaran enquiry"
         >
           <noscript>
             To send an enquiry without JavaScript,{" "}
-            <ContentMailLink href={"mailto:" + SITE.email}>email the Zeebaran team</ContentMailLink>
-            .
+            <SiteEmailLink>email the Zeebaran team</SiteEmailLink>.
           </noscript>
           <fieldset disabled={!hydrated || isSubmitting} className="form-fields">
             {!simple && (
@@ -539,7 +542,7 @@ export function ContactForm({ simple = false }: { simple?: boolean }) {
             )}
             {error && (
               <div className="delivery-error" role="alert">
-                {error} <ContentMailLink href={emailLink()}>Open email draft</ContentMailLink>
+                {error} <a href={emailLink()}>Open email draft</a>
                 {file && <small>Attach the PDF in your email app.</small>}
               </div>
             )}

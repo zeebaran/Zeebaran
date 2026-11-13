@@ -4,6 +4,8 @@ import { Heading, Reveal, Stagger, Item } from "@/components/Motion";
 import { Photo } from "@/components/Photo";
 import { aaa, carries, loop, visit } from "@/lib/hub-content";
 import type { CSSProperties } from "react";
+import { HubIllustration } from "@/components/hub/HubIllustration";
+import heroStyles from "@/components/hub/hub-hero.module.css";
 
 const d = (s: number) => ({ "--d": `${s}s` }) as CSSProperties;
 const eyebrow = "text-eyebrow font-bold uppercase tracking-[0.18em] text-forest/75";
@@ -13,7 +15,7 @@ const numDot =
 
 export function HubHero() {
   return (
-    <section className={`${wrap} pb-16 pt-16 sm:pb-20 sm:pt-24`}>
+    <section className={`${wrap} ${heroStyles.layout} pb-16 pt-16 sm:pb-20 sm:pt-24`}>
       <div className="hero-rise mb-6 flex items-center gap-2">
         <span className="inline-block h-px w-5 bg-forest/60" aria-hidden />
         <span className={eyebrow}>
@@ -50,6 +52,9 @@ export function HubHero() {
             }
           </ContentText>
         </p>
+      </div>
+      <div className={heroStyles.illustration}>
+        <HubIllustration />
       </div>
     </section>
   );
@@ -373,13 +378,13 @@ export function HubCta() {
             <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Link
                 href="/partnerships"
-                className="inline-flex w-full items-center justify-center rounded-full bg-green px-6 py-3 text-[0.8125rem] font-semibold text-white shadow-sm transition-all hover:bg-forest sm:w-auto"
+                className="action-motion inline-flex w-full items-center justify-center rounded-full bg-green px-6 py-3 text-[0.8125rem] font-semibold text-white shadow-sm transition-all hover:bg-forest sm:w-auto"
               >
                 <ContentText>{"Explore partnership →"}</ContentText>
               </Link>
               <Link
                 href="/contact"
-                className="inline-flex w-full items-center justify-center rounded-full border border-[#d6cfbc] bg-white px-6 py-3 text-[0.8125rem] font-semibold text-forest transition-all hover:bg-stone-50 sm:w-auto"
+                className="action-motion inline-flex w-full items-center justify-center rounded-full border border-[#d6cfbc] bg-white px-6 py-3 text-[0.8125rem] font-semibold text-forest transition-all hover:bg-stone-50 sm:w-auto"
               >
                 <ContentText>{"Contact Zeebaran →"}</ContentText>
               </Link>
