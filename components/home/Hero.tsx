@@ -12,7 +12,7 @@ export function Hero() {
   return (
     <section
       id="hero-intro"
-      className="relative mx-auto max-w-7xl px-4 pb-16 pt-12 sm:px-6 sm:pb-24 sm:pt-20 lg:px-8"
+      className="relative mx-auto flex min-h-[calc(100dvh-4.625rem)] max-w-7xl flex-col px-4 pb-[clamp(3rem,6.5dvh,5rem)] pt-12 sm:block sm:min-h-0 sm:px-6 sm:pb-24 sm:pt-20 lg:px-8"
     >
       <ContentPreload
         rel="preload"
@@ -21,8 +21,8 @@ export function Hero() {
         media="(max-width: 639px)"
         imageSizes="calc(100vw - 32px)"
       />
-      <div className="mx-auto flex max-w-4xl flex-col items-center text-center">
-        <div className="hero-rise mb-6 inline-flex items-center gap-1 rounded-full border border-green/20 bg-green/10 px-2 py-0.5 text-[0.48rem] font-semibold uppercase tracking-[0.1em] text-green shadow-sm sm:mb-8 sm:gap-2.5 sm:px-4 sm:py-1.5 sm:text-eyebrow sm:tracking-[0.18em]">
+      <div className="mx-auto flex max-w-4xl grow-[4] flex-col items-center justify-between text-center">
+        <div className="hero-rise mb-7 inline-flex items-center gap-1 rounded-full border border-green/20 bg-green/10 px-2 py-0.5 text-[0.48rem] font-semibold uppercase tracking-[0.1em] text-green shadow-sm sm:mb-8 sm:gap-2.5 sm:px-4 sm:py-1.5 sm:text-eyebrow sm:tracking-[0.18em]">
           <span className="whitespace-nowrap">
             <ContentText>Zeebaran · Himalayan Horticulture Platform</ContentText>
           </span>
@@ -34,11 +34,11 @@ export function Hero() {
           delay={0.1}
           tone="leaf"
           text={"Rooted in the valley.\n{Grown for the future.}"}
-          className="mb-6 text-display sm:mb-6"
+          className="mb-7 text-display sm:mb-6"
         />
 
         <p
-          className="hero-rise mb-8 max-w-3xl text-[0.9rem] leading-relaxed text-forest/80 sm:mb-10 sm:text-lead"
+          className="hero-rise mb-7 max-w-3xl text-[0.9rem] leading-relaxed text-forest/80 sm:mb-10 sm:text-lead"
           style={d(0.3)}
         >
           <ContentText>
@@ -48,12 +48,12 @@ export function Hero() {
         </p>
 
         <div
-          className="hero-rise mb-10 flex flex-wrap items-center justify-center gap-4 sm:mb-12"
+          className="hero-rise mb-7 flex flex-wrap items-center justify-center gap-x-4 gap-y-3 sm:mb-12 sm:gap-y-4"
           style={d(0.4)}
         >
           <Link
             href="/platform"
-            className="btn-orange inline-flex items-center justify-center gap-1.5 rounded-full bg-orange px-5 py-2.5 text-[0.75rem] font-semibold text-white shadow-md transition-all duration-300 hover:bg-[#e05d00] hover:shadow-lg sm:gap-2 sm:px-8 sm:py-3.5 sm:text-[0.8125rem]"
+            className="action-motion btn-orange inline-flex items-center justify-center gap-1.5 rounded-full bg-orange px-5 py-2.5 text-[0.75rem] font-semibold text-white shadow-md transition-all duration-300 hover:bg-[#e05d00] hover:shadow-lg sm:gap-2 sm:px-8 sm:py-3.5 sm:text-[0.8125rem]"
           >
             <span>
               <ContentText>Explore Platform</ContentText>
@@ -64,7 +64,7 @@ export function Hero() {
           </Link>
           <Link
             href="/mission"
-            className="inline-flex items-center justify-center gap-1.5 rounded-full border border-green/20 bg-white/90 px-5 py-2.5 text-[0.75rem] font-semibold text-forest shadow-sm transition-all duration-300 hover:border-leaf hover:bg-white sm:gap-2 sm:px-7 sm:py-3.5 sm:text-[0.8125rem]"
+            className="action-motion inline-flex items-center justify-center gap-1.5 rounded-full border border-green/20 bg-white/90 px-5 py-2.5 text-[0.75rem] font-semibold text-forest shadow-sm transition-all duration-300 hover:border-leaf hover:bg-white sm:gap-2 sm:px-7 sm:py-3.5 sm:text-[0.8125rem]"
           >
             <svg
               className="size-3 text-green sm:size-4"
@@ -150,10 +150,10 @@ export function Hero() {
         </div>
       </div>
 
-      <div className="flex flex-col items-center justify-center pb-2 pt-8 text-forest/75 transition-colors hover:text-green sm:pb-4 sm:pt-10">
+      <div className="flex grow flex-col items-center justify-end pb-2 pt-7 sm:justify-center text-forest/75 transition-colors hover:text-green sm:pb-4 sm:pt-10">
         <a
           href="#query-section"
-          className="inline-flex flex-col items-center gap-2 text-eyebrow font-semibold uppercase tracking-[0.18em]"
+          className="inline-flex flex-col items-center gap-1 text-eyebrow font-semibold uppercase tracking-[0.18em] sm:gap-2"
         >
           <span>
             <ContentText>Scroll to explore</ContentText>

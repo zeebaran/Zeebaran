@@ -4,7 +4,9 @@ import { CapabilityExplorer } from "@/components/CapabilityExplorer";
 import { ContentImage as Image } from "@/features/cms/Content";
 import { ContentLink as Link } from "@/features/cms/Content";
 import { Heading, Reveal, Stagger, Item, CountUp } from "@/components/Motion";
-import { adoption, homeStats, outcomes, tags, thumbs } from "@/lib/home-content";
+import { adoption, homeStats, outcomes, thumbs } from "@/lib/home-content";
+import { AbilityTabs } from "./AbilityTabs";
+import { HubBackdrop } from "./HubBackdrop";
 
 const eyebrow = "text-eyebrow font-bold uppercase tracking-[0.18em]";
 const arrowLink =
@@ -124,41 +126,7 @@ export function Ability() {
               className="text-h2"
             />
             <Reveal delay={0.1} className="space-y-6">
-              <p className="text-body text-forest/80">
-                <ContentText>
-                  Most growers Zeebaran works with cultivate less than half an acre. At that scale,
-                  every link in the value chain matters: the right planting material, timely
-                  diagnostics, access to storage, and a dependable route to market.
-                </ContentText>
-              </p>
-              <p className="text-body text-forest/80">
-                <ContentText>
-                  A grower’s effort alone cannot overcome gaps in knowledge, infrastructure, and
-                  market access. Strengthening one part has limited impact if the next link remains
-                  weak. That is why Zeebaran’s work begins by bringing these conditions within
-                  reach.
-                </ContentText>
-              </p>
-              <ul className="flex flex-wrap gap-2 pt-2" aria-label="Capabilities">
-                {tags.map((t, i) => (
-                  <li
-                    key={t}
-                    className={`rounded-full px-3.5 py-1.5 text-[0.6875rem] font-bold uppercase tracking-wider ${
-                      i === 0
-                        ? "btn-orange bg-orange text-white shadow-sm"
-                        : "border border-green/20 bg-white text-forest"
-                    }`}
-                  >
-                    <ContentText>{t}</ContentText>
-                  </li>
-                ))}
-              </ul>
-              <blockquote className="border-l-2 border-leaf pl-4 pt-4 font-serif text-small italic text-forest/80">
-                <ContentText>
-                  “Zeebaran Hub Centres, field teams, and digital platforms ensure growers have
-                  access to expert guidance when and where they need it.”
-                </ContentText>
-              </blockquote>
+              <AbilityTabs />
             </Reveal>
           </div>
           <Reveal className="flex justify-center lg:col-span-6" y={30}>
@@ -374,7 +342,10 @@ export function Himalayas() {
                 </ContentText>
               </p>
               <p className="inline-flex items-center gap-2 pt-2 text-eyebrow font-bold uppercase tracking-[0.14em] text-forest">
-                <span className="size-2.5 rounded-full bg-leaf" />
+                <span
+                  className="himalayas-location-dot size-2.5 shrink-0 rounded-full bg-leaf"
+                  aria-hidden="true"
+                />
                 <ContentText>Srinagar · Pulwama · Shopian · Baramulla · Anantnag</ContentText>
               </p>
             </Reveal>
@@ -407,19 +378,26 @@ export function Himalayas() {
                 fontWeight="700"
                 letterSpacing="2"
                 x="360"
-                y="80"
+                y="64"
               >
                 THE HIMALAYAN BELT
               </ContentSvgText>
               <circle
-                className="animate-pulse"
+                className="himalayas-marker-ripple"
                 cx="210"
                 cy="160"
                 fill="#8CC63F"
                 fillOpacity="0.2"
                 r="28"
               />
-              <circle cx="210" cy="160" fill="#06642D" fillOpacity="0.3" r="14" />
+              <circle
+                className="himalayas-marker-breath"
+                cx="210"
+                cy="160"
+                fill="#06642D"
+                fillOpacity="0.3"
+                r="14"
+              />
               <circle cx="210" cy="160" fill="#06642D" r="6" />
               <line stroke="#06642D" strokeWidth="1.5" x1="210" x2="210" y1="160" y2="205" />
               <rect fill="#06642D" height="26" rx="13" width="90" x="165" y="205" />
@@ -453,7 +431,8 @@ export function HubPanel() {
     <section id="zeebaran-hub" className="bg-cream py-16 sm:py-24">
       <div className="home-wrap">
         <div className="relative overflow-hidden rounded-3xl bg-forest p-6 text-white shadow-2xl sm:p-12 lg:p-16">
-          <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12">
+          <HubBackdrop />
+          <div className="relative grid grid-cols-1 items-center gap-12 lg:grid-cols-12">
             <div className="space-y-6 lg:col-span-6">
               <Reveal y={8}>
                 <span className={`${eyebrow} block text-leaf`}>
@@ -622,11 +601,10 @@ export function Legacy() {
             alt="Himalayan valley orchards at sunset"
             fill
             sizes="(min-width: 1280px) 1216px, 100vw"
-            className="img-breathe object-cover brightness-[0.75]"
+            className="img-breathe object-cover"
           />
-          <div className="absolute inset-0 bg-forest/60 backdrop-blur-[2px]" />
           <Reveal className="relative z-10 w-full max-w-2xl">
-            <div className="rounded-2xl border border-white bg-white/60 p-8 text-center shadow-xl backdrop-blur-md sm:p-12">
+            <div className="rounded-3xl border border-white bg-white/[0.93] p-8 text-center shadow-xl sm:p-12">
               <Heading
                 text="Some things are grown {for those who come after us.}"
                 tone="leaf"
@@ -648,13 +626,13 @@ export function Legacy() {
               <div className="flex flex-wrap items-center justify-center gap-4">
                 <Link
                   href="/partnerships"
-                  className="btn-orange rounded-full bg-orange px-6 py-3 text-[0.6875rem] font-bold uppercase tracking-widest text-white shadow-sm transition-colors hover:bg-forest"
+                  className="action-motion btn-orange rounded-full bg-orange px-6 py-3 text-[0.6875rem] font-bold uppercase tracking-widest text-white shadow-sm transition-colors hover:bg-forest"
                 >
                   <ContentText>Explore Partnership</ContentText>
                 </Link>
                 <Link
                   href="/contact"
-                  className="rounded-full border border-green/20 bg-cream px-6 py-3 text-[0.6875rem] font-bold uppercase tracking-widest text-forest transition-colors hover:bg-cream/80"
+                  className="action-motion rounded-full border border-green/20 bg-cream px-6 py-3 text-[0.6875rem] font-bold uppercase tracking-widest text-forest transition-colors hover:bg-cream/80"
                 >
                   <ContentText>Contact Zeebaran</ContentText>
                 </Link>
