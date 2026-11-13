@@ -65,7 +65,7 @@ test("landscape menu, focus and destination", async ({ page }) => {
 });
 test("capability selection works by keyboard and links to its story", async ({ page }) => {
   await page.goto("/#system");
-  const tabs = page.getByRole("tab");
+  const tabs = page.locator("#system").getByRole("tab");
   await tabs.first().focus();
   await page.keyboard.press("ArrowRight");
   await expect(tabs.nth(1)).toHaveAttribute("aria-selected", "true");
