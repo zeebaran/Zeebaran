@@ -10,6 +10,7 @@ import {
   Proof,
   AboutCta,
 } from "@/components/pages/about";
+import { TeamSection } from "@/features/team/TeamSection";
 import { HistoryTimeline } from "@/components/pages/HistoryTimeline";
 
 export const metadata = pageMeta(
@@ -24,6 +25,7 @@ export default function About() {
       {
         <>
           <AboutHero />
+          <TeamSection />
           <Why />
           <Ecosystem />
           <section className="rounded-t-[2rem] border-t border-line bg-white py-16 shadow-sm sm:rounded-t-[3rem] sm:py-28">

@@ -4,7 +4,8 @@ import { Heading, Reveal, Stagger, Item } from "@/components/Motion";
 import { Photo } from "@/components/Photo";
 import { principles } from "@/lib/content";
 import type { CSSProperties } from "react";
-import { AppleIllustration } from "@/components/about/AppleIllustration";
+// import { AppleIllustration } from "@/components/about/AppleIllustration";
+import { OrchardGrowerIllustration } from "@/components/about/OrchardGrowerIllustration";
 import heroStyles from "@/components/about/about-hero.module.css";
 
 export const eyebrow = "text-eyebrow font-bold uppercase tracking-[0.18em] text-green";
@@ -44,8 +45,9 @@ export function AboutHero() {
             </ContentText>
           </p>
         </div>
-        <div className={heroStyles.apple} data-about-apple>
-          <AppleIllustration />
+        <div className={heroStyles.illustration}>
+          {/* <AppleIllustration /> */}
+          <OrchardGrowerIllustration />
         </div>
       </div>
     </section>
@@ -327,13 +329,13 @@ export function AboutCta() {
               <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
                 <Link
                   href="/partnerships"
-                  className="btn-orange rounded-full bg-orange px-6 py-3 text-[0.75rem] font-semibold tracking-wider text-white shadow-sm transition-colors hover:bg-forest"
+                  className="action-motion btn-orange rounded-full bg-orange px-6 py-3 text-[0.75rem] font-semibold tracking-wider text-white shadow-sm transition-colors hover:bg-forest"
                 >
                   <ContentText>Explore partnership →</ContentText>
                 </Link>
                 <Link
                   href="/contact"
-                  className="rounded-full border border-green/25 bg-transparent px-6 py-3 text-[0.75rem] font-semibold tracking-wider text-forest transition-colors hover:bg-cream"
+                  className="action-motion rounded-full border border-green/25 bg-transparent px-6 py-3 text-[0.75rem] font-semibold tracking-wider text-forest transition-colors hover:bg-cream"
                 >
                   <ContentText>Contact Zeebaran →</ContentText>
                 </Link>
