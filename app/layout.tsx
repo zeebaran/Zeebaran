@@ -37,9 +37,15 @@ export const metadata: Metadata = {
   title: { default: `${SITE.name} | ${SITE.tagline}`, template: `%s | ${SITE.name}` },
   description: SITE.description,
   applicationName: SITE.name,
-  icons: { icon: "/brand/favicon-32.png", apple: "/brand/apple-touch-icon.png" },
+  icons: {
+    icon: [
+      { url: "/brand/favicon-32.png", type: "image/png", sizes: "32x32" },
+      { url: "/brand/icon.svg", type: "image/svg+xml", sizes: "any" },
+    ],
+    apple: { url: "/brand/apple-touch-icon.png", type: "image/png", sizes: "180x180" },
+  },
   openGraph: { siteName: SITE.name, type: "website", locale: "en", images: [socialImage] },
-  twitter: { card: "summary_large_image", images: [socialImage.url] },
+  twitter: { card: "summary_large_image", site: "@zeebaran", images: [socialImage.url] },
   robots: { index: true, follow: true },
 };
 

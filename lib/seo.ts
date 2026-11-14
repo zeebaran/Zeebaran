@@ -3,12 +3,13 @@ import type { Metadata } from "next";
 import { SITE } from "./site";
 
 export function pageMeta(title: string, description: string, path: string): Metadata {
+  const fullTitle = `${title} | ${SITE.name}`;
   return {
-    title,
+    title: { absolute: fullTitle },
     description,
     alternates: { canonical: path },
     openGraph: {
-      title: `${title} | ${SITE.name}`,
+      title: fullTitle,
       description,
       url: path,
       siteName: SITE.name,
@@ -19,7 +20,8 @@ export function pageMeta(title: string, description: string, path: string): Meta
     twitter: {
       images: [socialImage.url],
       card: "summary_large_image",
-      title: `${title} | ${SITE.name}`,
+      site: "@zeebaran",
+      title: fullTitle,
       description,
     },
   };

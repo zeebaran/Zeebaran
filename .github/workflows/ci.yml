@@ -2,11 +2,22 @@ name: CI
 on:
   push: { branches: [main] }
   pull_request:
+
+permissions:
+  contents: read
+
+# New pushes supersede older checks on the same branch or pull request.
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  NEXT_PUBLIC_ASSISTANT_INTERACTIVE: "true"
+
 jobs:
-  verify:
+  quality:
+    name: Quality and production build
     runs-on: ubuntu-latest
-    env:
-      NEXT_PUBLIC_ASSISTANT_INTERACTIVE: "true"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -16,14 +27,72 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
       - run: npm test
+      - uses: actions/cache@v4
+        with:
+          path: .next/cache
+          key: ${{ runner.os }}-next-${{ hashFiles('package-lock.json') }}-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-next-${{ hashFiles('package-lock.json') }}-
       - run: npm run build
-      - run: npx playwright install --with-deps chromium firefox webkit
-      - run: npm run test:e2e
+      # Package once; every browser tests the exact same production build.
+      # Exclude the large compilation cache; preserve file modes inside the tar.
+      - run: tar --exclude='.next/cache' -czf production-build.tgz .next
+      - uses: actions/upload-artifact@v4
+        with:
+          name: production-build
+          path: production-build.tgz
+          retention-days: 1
+          compression-level: 0
+
+  browsers:
+    name: Browser · ${{ matrix.browser }}
+    needs: quality
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          name: production-build
+      - run: tar -xzf production-build.tgz
+      - run: npx playwright install --with-deps ${{ matrix.browser }}
+      - run: npm run test:e2e -- --project=${{ matrix.browser }} --reporter=list,json
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: test-results/results.json
+      - name: Summarize browser results
+        if: always()
+        run: |
+          node <<'JS'
+          const fs = require('node:fs');
+          if (fs.existsSync('test-results/results.json')) {
+            const { stats } = JSON.parse(fs.readFileSync('test-results/results.json', 'utf8'));
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,
+              `Passed: ${stats.expected} · Failed: ${stats.unexpected} · Skipped: ${stats.skipped} · Flaky: ${stats.flaky}\n`);
+          }
+          JS
       - name: Upload browser failure evidence
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: browser-failure-evidence
+          name: browser-failure-${{ matrix.browser }}
           path: test-results/
           retention-days: 7
           if-no-files-found: ignore
+
+  # Keep the existing required check name. It only succeeds when quality and
+  # all three browser jobs succeed; a skipped or failed dependency cannot pass.
+  verify:
+    needs: [quality, browsers]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require all checks to pass
+        env:
+          QUALITY_RESULT: ${{ needs.quality.result }}
+          BROWSER_RESULT: ${{ needs.browsers.result }}
+        run: test "$QUALITY_RESULT" = success && test "$BROWSER_RESULT" = success

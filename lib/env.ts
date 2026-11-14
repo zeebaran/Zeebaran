@@ -2,7 +2,7 @@ import "server-only";
 import { z } from "zod";
 
 const schema = z.object({
-  NEXT_PUBLIC_SITE_URL: z.string().url().default("https://www.zeebaran.com"),
+  NEXT_PUBLIC_SITE_URL: z.string().url().default("https://zeebaran.vercel.app"),
   NEXT_PUBLIC_GA_ID: z
     .string()
     .regex(/^G-[A-Z0-9]+$/, "Expected a GA4 id like G-XXXXXXXXXX")
@@ -11,7 +11,13 @@ const schema = z.object({
 });
 
 const parsed = schema.safeParse({
-  NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || undefined,
+  // An explicit custom domain wins once DNS is migrated. Until then, use the
+  // stable production alias, never a protected per-deployment preview URL.
+  NEXT_PUBLIC_SITE_URL:
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    (process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : undefined),
   NEXT_PUBLIC_GA_ID: process.env.NEXT_PUBLIC_GA_ID,
 });
 

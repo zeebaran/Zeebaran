@@ -14,7 +14,7 @@ import { pageMeta } from "@/lib/seo";
 import { SITE } from "@/lib/site";
 
 export const metadata = pageMeta(
-  `${SITE.name} | Himalayan Horticulture & Orchard Infrastructure`,
+  "Himalayan Horticulture & Orchard Infrastructure",
   SITE.description,
   "/",
 );
