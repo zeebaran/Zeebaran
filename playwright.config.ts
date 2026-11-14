@@ -8,7 +8,12 @@ export default defineConfig({
   workers: 2,
   timeout: 90000,
   reporter: "list",
-  use: { baseURL, trace: "retain-on-failure", reducedMotion: "reduce" },
+  use: {
+    baseURL,
+    trace: "retain-on-failure",
+    screenshot: "only-on-failure",
+    reducedMotion: "reduce",
+  },
   projects: [
     { name: "chromium", use: { browserName: "chromium" } },
     {
