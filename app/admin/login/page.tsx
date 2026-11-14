@@ -3,7 +3,7 @@ import { AssetImage } from "@/features/media/AssetImage";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { getApps, initializeApp } from "firebase/app";
 import {
   getAuth,
@@ -14,50 +14,65 @@ import {
   inMemoryPersistence,
   signOut,
   connectAuthEmulator,
+  sendPasswordResetEmail,
 } from "firebase/auth";
 import { ArrowRight, Leaf, ShieldCheck, Mail, KeyRound } from "lucide-react";
 import { adminRequest, authConfigured, firebasePublic } from "@/features/admin/client";
+import { adminAuthError } from "@/features/admin/auth-errors";
 export default function AdminLogin() {
   const router = useRouter();
+  const emailInput = useRef<HTMLInputElement>(null);
   const [email, setEmail] = useState(""),
     [password, setPassword] = useState(""),
     [error, setError] = useState(""),
-    [pending, setPending] = useState(false);
+    [pending, setPending] = useState(false),
+    [resetting, setResetting] = useState(false),
+    [notice, setNotice] = useState("");
+  const busy = pending || resetting;
+  function configuredAuth() {
+    const auth = getAuth(getApps()[0] || initializeApp(firebasePublic));
+    if (process.env.NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_HOST && !auth.emulatorConfig)
+      connectAuthEmulator(auth, "http://" + process.env.NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_HOST, {
+        disableWarnings: true,
+      });
+    return auth;
+  }
+  async function resetPassword() {
+    setError("");
+    setNotice("");
+    if (!emailInput.current?.reportValidity()) return;
+    setResetting(true);
+    try {
+      await sendPasswordResetEmail(configuredAuth(), email.trim(), {
+        url: window.location.origin + "/admin/login",
+      });
+      setNotice(
+        "If this account is registered, a secure password link has been sent. Check your inbox and spam folder.",
+      );
+    } catch (e) {
+      setError(adminAuthError(e, "reset"));
+    } finally {
+      setResetting(false);
+    }
+  }
   async function login(google: boolean) {
     setError("");
+    setNotice("");
     setPending(true);
     let auth;
     try {
-      auth = getAuth(getApps()[0] || initializeApp(firebasePublic));
-      if (process.env.NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_HOST && !auth.emulatorConfig)
-        connectAuthEmulator(auth, "http://" + process.env.NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_HOST, {
-          disableWarnings: true,
-        });
+      auth = configuredAuth();
       await setPersistence(auth, inMemoryPersistence);
       const credential = google
         ? await signInWithPopup(auth, new GoogleAuthProvider())
-        : await signInWithEmailAndPassword(auth, email, password);
+        : await signInWithEmailAndPassword(auth, email.trim(), password);
       await adminRequest("/api/admin/session", { idToken: await credential.user.getIdToken() });
       await signOut(auth);
       router.replace("/admin");
       router.refresh();
     } catch (e) {
       if (auth) await signOut(auth).catch(() => {});
-      const code = e && typeof e === "object" && "code" in e ? String(e.code) : "";
-      const messages: Record<string, string> = {
-        "auth/operation-not-allowed": "This sign-in method is not enabled. Use Google to continue.",
-        "auth/popup-blocked":
-          "Your browser blocked the sign-in window. Allow pop-ups for this site and try again.",
-        "auth/popup-closed-by-user":
-          "The sign-in window closed before completion. You can try again.",
-        "auth/network-request-failed":
-          "The sign-in service could not be reached. Check your connection and retry.",
-      };
-      setError(
-        e instanceof Error && e.message.includes("administration")
-          ? e.message
-          : messages[code] || "Sign-in could not complete. Check your account and try again.",
-      );
+      setError(adminAuthError(e));
     } finally {
       setPending(false);
     }
@@ -112,7 +127,7 @@ export default function AdminLogin() {
         )}
         <button
           className="admin-btn admin-google"
-          disabled={!authConfigured || pending}
+          disabled={!authConfigured || busy}
           onClick={() => void login(true)}
         >
           <span className="inline-flex items-center gap-3">
@@ -136,13 +151,14 @@ export default function AdminLogin() {
               <Mail size={14} /> Email address
             </span>
             <input
+              ref={emailInput}
               type="email"
               autoComplete="username"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@zeebaran.com"
-              disabled={pending || !authConfigured}
+              disabled={busy || !authConfigured}
             />
           </label>
           <label>
@@ -155,15 +171,28 @@ export default function AdminLogin() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              disabled={pending || !authConfigured}
+              disabled={busy || !authConfigured}
             />
           </label>
+          <button
+            type="button"
+            className="admin-password-reset"
+            disabled={busy || !authConfigured}
+            onClick={() => void resetPassword()}
+          >
+            {resetting ? "Sending secure link…" : "Set or reset password"}
+          </button>
+          {notice && (
+            <p className="admin-notice" role="status">
+              {notice}
+            </p>
+          )}
           {error && (
             <p className="admin-error" role="alert">
               {error}
             </p>
           )}
-          <button className="admin-btn admin-primary" disabled={!authConfigured || pending}>
+          <button className="admin-btn admin-primary" disabled={!authConfigured || busy}>
             {pending ? "Verifying your account…" : "Open the editorial desk"}
             <ArrowRight size={16} />
           </button>

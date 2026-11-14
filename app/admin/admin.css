@@ -317,6 +317,19 @@
   width: 100%;
   justify-content: space-between;
 }
+.admin-password-reset {
+  justify-self: end;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: #126737;
+  font-size: 12px;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.admin-password-reset:disabled {
+  opacity: 0.55;
+}
 .admin-security-note {
   display: flex;
   align-items: start;
