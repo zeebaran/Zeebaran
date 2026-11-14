@@ -115,9 +115,12 @@ export default function AdminLogin() {
           disabled={!authConfigured || pending}
           onClick={() => void login(true)}
         >
-          Continue with Google
-          {/* Official Firebase UI asset, served locally without a third-party request. */}
-          <Image src="/brand/google.svg" alt="" width={20} height={20} className="shrink-0" />
+          <span className="inline-flex items-center gap-3">
+            {/* Official Firebase UI asset, served locally without a third-party request. */}
+            <Image src="/brand/google.svg" alt="" width={20} height={20} className="shrink-0" />
+            Continue with Google
+          </span>
+          <ArrowRight size={16} />
         </button>
         <div className="admin-divider">
           <span>or use your email</span>
