@@ -1,6 +1,7 @@
 "use client";
 import { AssetImage } from "@/features/media/AssetImage";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { getApps, initializeApp } from "firebase/app";
@@ -114,7 +115,9 @@ export default function AdminLogin() {
           disabled={!authConfigured || pending}
           onClick={() => void login(true)}
         >
-          Continue with Google <ArrowRight size={16} />
+          Continue with Google
+          {/* Official Firebase UI asset, served locally without a third-party request. */}
+          <Image src="/brand/google.svg" alt="" width={20} height={20} className="shrink-0" />
         </button>
         <div className="admin-divider">
           <span>or use your email</span>
